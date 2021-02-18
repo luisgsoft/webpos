@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+    <default>
+        <payment>
+            <webposcash>
+                <model>Gsoft\Webpos\Model\Payment\Cash</model>
+                <active>1</active>
+                <title>Pago en webpos en efectivo</title>
+                <order_status>processing</order_status><!-- set default order status-->
+            </webposcash>
+            <webposcard>
+                <model>Gsoft\Webpos\Model\Payment\Card</model>
+                <active>1</active>
+                <title>Pago en webpos con tarjeta</title>
+                <order_status>processing</order_status>
+            </webposcard>
+        </payment>
+        <carriers>
+            <webpos>
+                <active>1</active>
+                <sallowspecific>0</sallowspecific>
+                <model>Gsoft\Webpos\Model\Carrier\Shipping</model>
+                <name>Punto de venta</name>
+                <title>Recogida en tienda</title>
+                <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
+            </webpos>
+        </carriers>
+        <general>
+            <source_stock>default</source_stock>
+            <payment_description>Pagado en tienda</payment_description>
+        </general>
+    </default>
+</config>

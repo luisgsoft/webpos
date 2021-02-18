@@ -1,0 +1,17 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="webpos_save_before" instance="Gsoft\Webpos\Observer\BeforeSaveOrder" />
+    </event>
+    <event name="sales_model_service_quote_submit_success">
+        <observer name="webpos_save_order" instance="Gsoft\Webpos\Observer\SaveOrder" />
+    </event>
+    <event name="sales_order_delete_after">
+        <observer name="webpos_order_delete_after" instance="Gsoft\Webpos\Observer\CancelOrder" />
+    </event>
+    <event name="order_cancel_after">
+        <observer name="webpos_cancel_order" instance="Gsoft\Webpos\Observer\CancelOrder" />
+    </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="webpos_shipment_save_after" instance="Gsoft\Webpos\Observer\SaveShipment" />
+    </event>
+</config>

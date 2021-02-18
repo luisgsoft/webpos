@@ -1,0 +1,33 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Api/etc/extension_attributes.xsd">
+    <extension_attributes for="Magento\Catalog\Api\Data\ProductInterface">
+        <attribute code="webpos_qty" type="int" />
+        <attribute code="webpos_tax" type="float" />
+        <attribute code="webpos_price_without_tax" type="float" />
+        <attribute code="webpos_price" type="float" />
+        <attribute code="webpos_stock" type="Gsoft\Webpos\Api\Data\StockInterface" />
+    </extension_attributes>
+    <extension_attributes for="Magento\Quote\Api\Data\CartInterface">
+        <attribute code="webpos_terminal" type="string" />
+        <attribute code="webpos_discount_percent" type="float" />
+        <attribute code="webpos_discount_fixed" type="float" />
+        <attribute code="webpos_discount_label" type="string" />
+        <attribute code="webpos_alias" type="string" />
+        <attribute code="webpos_user" type="string" />
+    </extension_attributes>
+    <extension_attributes for="Magento\Sales\Api\Data\OrderInterface">
+        <attribute code="webpos_terminal" type="string" />
+        <attribute code="webpos_discount_percent" type="float" />
+        <attribute code="webpos_discount_fixed" type="float" />
+        <attribute code="webpos_discount_label" type="string" />
+        <attribute code="webpos_alias" type="string" />
+        <attribute code="webpos_user" type="string" />
+    </extension_attributes>
+    <extension_attributes for="Magento\Sales\Api\Data\CreditmemoInterface">
+        <attribute code="webpos_payment" type="string" />
+        <attribute code="webpos_terminal" type="string" />
+    </extension_attributes>
+    <extension_attributes for="Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface">
+        <attribute code="webpos_payment" type="string"/>
+        <attribute code="webpos_terminal" type="string" />
+    </extension_attributes>
+</config>

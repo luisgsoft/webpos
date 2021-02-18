@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright © 2017 Magestore. All rights reserved.
+  ~ See COPYING.txt for license details.
+  -->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+
+    <route url="/V1/gsoft/Webpos/catalog/getsimples/:sku/:store_id" method="GET">
+        <service class="Gsoft\Webpos\Api\CatalogInterface" method="getSimples"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+
+    <route url="/V1/gsoft/Webpos/catalog/list/" method="GET">
+        <service class="Gsoft\Webpos\Api\CatalogInterface" method="getProductList"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+
+    <route url="/V1/gsoft/Webpos/config/list/" method="GET">
+        <service class="Gsoft\Webpos\Api\ConfigInterface" method="getConfig"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+
+    <route url="/V1/gsoft/Webpos/quote/create/" method="POST">
+        <service class="Gsoft\Webpos\Api\SalesInterface" method="createQuote"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+
+    <route url="/V1/gsoft/Webpos/quote/coupon/" method="POST">
+        <service class="Gsoft\Webpos\Api\SalesInterface" method="getInfoCoupon"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+
+    <route url="/V1/gsoft/Webpos/quote/prepare/" method="POST">
+        <service class="Gsoft\Webpos\Api\SalesInterface" method="prepareQuote"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+    <route url="/V1/gsoft/Webpos/reservations/" method="GET">
+        <service class="Gsoft\Webpos\Api\ReservationsInterface" method="reservations"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+    <route url="/V1/gsoft/Webpos/reservations/accept/" method="POST">
+        <service class="Gsoft\Webpos\Api\ReservationsInterface" method="acceptReservation"/>
+        <resources>
+            <resource ref="Magento_Catalog::manage"/>
+        </resources>
+        <!--<resources>
+            <resource ref="anonymous"/>
+        </resources>-->
+    </route>
+</routes>

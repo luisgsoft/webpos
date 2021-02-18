@@ -1,0 +1,22 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:DataObject/etc/fieldset.xsd">
+    <scope id="global">
+        <fieldset id="sales_convert_quote">
+            <field name="webpos_terminal">
+                <aspect name="to_order" />
+            </field>
+            <field name="webpos_discount_fixed">
+                <aspect name="to_order" />
+            </field>
+            <field name="webpos_discount_percent">
+                <aspect name="to_order" />
+            </field>
+            <field name="webpos_alias">
+                <aspect name="to_order" />
+            </field>
+            <field name="webpos_user">
+                <aspect name="to_order" />
+            </field>
+        </fieldset>
+    </scope>
+</config>

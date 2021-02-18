@@ -1,0 +1,17 @@
+<?php $_order = $block->getOrder();
+
+if($_order->getData("webpos_user")){
+    ?>
+    <table class="admin__table-secondary order-information-table">
+        <tbody>
+        <tr>
+            <th><?php echo __("Webpos Seller");?></th>
+            <td><?php echo $_order->getData("webpos_user"); ?></td>
+        </tr>
+        <tr>
+            <th><?php echo __("Webpos Terminal");?></th>
+            <td><?php echo $_order->getData("webpos_terminal"); ?></td>
+        </tr>
+        </tbody></table>
+<?php
+}
