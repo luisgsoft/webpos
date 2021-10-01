@@ -141,53 +141,6 @@ class Sales implements SalesInterface
         else $quote->setWebposDiscountLabel(null);
 
         if (!empty($data['coupon_code'])) $quote->setCouponCode($data['coupon_code']);
-        foreach ($data['items'] as $k => $item) {
-            try {
-                // $quoteItems = $quote->getItems();
-
-                $_product = $this->productRepository->getById($item['id']);
-                /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
-
-                $params = [];
-                $params['product'] = $_product->getId();
-                $params['qty'] = $item['qty'];
-
-                //$_product->setPrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
-                // $_product->setBasePrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
-                $params['custom_option'] = ["webpos_item_id" => $item['item_id']];
-
-               // $params['discount_amount'] = 10;
-                $_product->addCustomOption('webpos_item_id', $item['item_id']);
-                $_product->setData("webpos_item_id", $item['item_id']);
-                if (!empty($item['custom_price'])){
-                    if(!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
-                        $rate = $this->getTaxPercent($_product);
-                        if ($rate > 0) {
-                            $params['custom_price'] = $item['custom_price'] / (1 + $rate * 0.01);
-                        } else $params['custom_price'] = $item['custom_price'];
-                    }else $params['custom_price'] = $item['custom_price'];
-                }
-                if (!empty($item['selected_values'])) {
-
-                    foreach ($item['selected_values'] as $att) {
-                        $options[$att['id']] = $att['value'];
-                    }
-                    $params['super_attribute'] = $options;
-
-                }
-                $obj = new\Magento\Framework\DataObject();
-                $obj->setData($params);
-                $quote->addProduct($_product, $obj);
-
-
-            } catch (\Exception $e) {
-
-                 /* echo $e->getMessage();
-                  print_r($e->getTraceAsString());*/
-                $data['items'][$k]['quote_item_id'] = 0;
-                $data['items'][$k]['stock'] = 0;
-            }
-        }
 
         if(empty($data['id_customer']) || !$data['id_customer']>0) {
             $quote->setCustomerEmail("webpos@mail.to");
@@ -195,7 +148,7 @@ class Sales implements SalesInterface
             $quote->setCustomerLastname("Terminal " . intval($data['terminal']));
             $quote->setCustomerIsGuest(true);
         }else{
-          //  $customer = $this->customerFactory->create()->load($data['id_customer']);
+            //  $customer = $this->customerFactory->create()->load($data['id_customer']);
             $Icustomer = $this->customerRepository->getById($data['id_customer']);
             /**@var \Magento\Customer\Model\Customer $customer*/
             $quote->assignCustomer($Icustomer);
@@ -221,8 +174,82 @@ class Sales implements SalesInterface
 
 
         }
+        foreach ($data['items'] as $k => $item) {
+            try {
+                // $quoteItems = $quote->getItems();
 
-        $quote->collectTotals()->save();
+                $_product = $this->productRepository->getById($item['id']);
+                /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
+
+                $params = [];
+                $params['product'] = $_product->getId();
+                $params['qty'] = $item['qty'];
+
+                //$_product->setPrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
+                // $_product->setBasePrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
+                $params['custom_option'] = ["webpos_item_id" => $item['item_id']];
+
+                // $params['discount_amount'] = 10;
+                $_product->addCustomOption('webpos_item_id', $item['item_id']);
+                $_product->setData("webpos_item_id", $item['item_id']);
+                if (!empty($item['custom_price'])){
+                    if(!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+                        $rate = $this->getTaxPercent($_product);
+                        if ($rate > 0) {
+                            $params['custom_price'] = $item['custom_price'] / (1 + $rate * 0.01);
+                        } else $params['custom_price'] = $item['custom_price'];
+                    }else $params['custom_price'] = $item['custom_price'];
+                }
+                if (!empty($item['selected_values'])) {
+
+                    foreach ($item['selected_values'] as $att) {
+                        $options[$att['id']] = $att['value'];
+                    }
+                    $params['super_attribute'] = $options;
+
+                }
+                $obj = new\Magento\Framework\DataObject();
+                $obj->setData($params);
+                $quote->addProduct($_product, $obj);
+
+
+            } catch (\Exception $e) {
+
+                /* echo $e->getMessage();
+                 print_r($e->getTraceAsString());*/
+                $data['items'][$k]['quote_item_id'] = 0;
+                $data['items'][$k]['stock'] = 0;
+            }
+        }
+        $free_shipping_qty=$this->scopeConfig->getValue('carriers/freeshipping/free_shipping_subtotal', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+        $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default", \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $shippingAddress = $quote->getShippingAddress();
+        $shippingAddress->setCollectShippingRates(true)
+            ->collectShippingRates();
+        foreach($shippingAddress->getAllShippingRates() as $rate){
+            if($rate->getCode()=="freeshipping_freeshipping"){
+                $shipping_method="freeshipping_freeshipping";
+                break;
+            }
+        }
+
+
+        $shippingAddress->setShippingMethod($shipping_method);
+
+        $quote->collectTotals();
+
+        if( $shipping_method!=="freeshipping_freeshipping" && $free_shipping_qty < $quote->getSubtotalWithDiscount()){
+            $quote->setTotalsCollectedFlag(false);
+            $shippingAddress->setCollectShippingRates(true)
+                ->collectShippingRates();
+            $shipping_method="freeshipping_freeshipping";
+            $shippingAddress->setShippingMethod($shipping_method);
+
+            $quote->collectTotals();
+        }
+
+        $quote->save();
 
         foreach ($quote->getAllItems() as $inserted) {
             foreach ($data['items'] as $k => $item) {
@@ -256,6 +283,8 @@ class Sales implements SalesInterface
         $data['discount_amount'] = abs($quote->getShippingAddress()->getDiscountAmount());
         $data['discount_cart'] = $quote->getShippingAddress()->getDiscountDescription();
         $data['coupon_code'] = $quote->getCouponCode();
+        $data['subtotal_with_discount'] = $quote->getSubtotalWithDiscount();
+        $data['shipping_amount'] = $quote->getShippingAddress()->getShippingAmount();
         $totals = $quote->getTotals();
 
         /*@var \Magento\Quote\Model\Quote\Address\Total $tax*/
@@ -356,15 +385,15 @@ class Sales implements SalesInterface
             $payment->setAdditionalInformation("webpos", json_encode($data['payments']));
             $quote->setPayment($payment);
 
-            $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default");
+            $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default", \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $shippingAddress = $quote->getShippingAddress();
             $shippingAddress->setCollectShippingRates(true)
                 ->collectShippingRates();
             foreach($shippingAddress->getAllShippingRates() as $rate){
-               if($rate->getCode()=="freeshipping_freeshipping"){
-                   $shipping_method="freeshipping_freeshipping";
-                   break;
-               }
+                if($rate->getCode()=="freeshipping_freeshipping"){
+                    $shipping_method="freeshipping_freeshipping";
+                    break;
+                }
             }
 
             $shippingAddress->setShippingMethod($shipping_method);
@@ -381,45 +410,51 @@ class Sales implements SalesInterface
         $errores=[];
 
         try {
-            // load order from database
-            if ($order->canShip()) {
-                $items = [];
+            if($this->scopeConfig->getValue("webpos/general/create_shipment", \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+                // load order from database
+                if ($order->canShip()) {
+                    $items = [];
 
-                foreach($order->getAllItems() as $item) {
-                    $items[$item->getItemId()] = $item->getQtyOrdered();
+                    foreach ($order->getAllItems() as $item) {
+                        $items[$item->getItemId()] = $item->getQtyOrdered();
+                    }
+
+
+                    // create the shipment
+                    $shipment = $this->shipmentFactory->create($order, $items);
+                    $shipment->register();
+                    // save the newly created shipment
+                    $transactionSave = $this->transactionFactory->create()->addObject($shipment);
+                    $transactionSave->save();
+                    $data['shipment_id'] = $shipment->getId();
                 }
-
-
-                // create the shipment
-                $shipment = $this->shipmentFactory->create($order, $items);
-                $shipment->register();
-                // save the newly created shipment
-                $transactionSave =  $this->transactionFactory->create()->addObject($shipment);
-                $transactionSave->save();
-                $data['shipment_id'] = $shipment->getId();
             }
 
         } catch (\Exception $e) {
             $errores[]=$e->getMessage();
         }
         try {
+            if($this->scopeConfig->getValue("webpos/general/create_invoice", \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+                //generate invoice
+                $invoice = $this->invoiceService->prepareInvoice($order);
+                $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
+                $invoice->register();
+                $invoice->getOrder()->setCustomerNoteNotify(false);
+                $invoice->getOrder()->setIsInProcess(true);
+                // $order->setState("processing");
 
-            //generate invoice
-            $invoice = $this->invoiceService->prepareInvoice($order);
-            $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
-            $invoice->register();
-            $invoice->getOrder()->setCustomerNoteNotify(false);
-            $invoice->getOrder()->setIsInProcess(true);
-            $order->setState("complete");
-            $order->setStatus("complete");
-            $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description")), false);
-            $transactionSave = $this->transactionFactory->create()->addObject($invoice)->addObject($invoice->getOrder());
-            $transactionSave->save();
-            $data['invoice_id'] = $invoice->getId();
+                $transactionSave = $this->transactionFactory->create()->addObject($invoice)->addObject($invoice->getOrder());
+                $transactionSave->save();
+                $data['invoice_id'] = $invoice->getId();
+            }
 
         } catch (\Exception $e) {
             $errores[]=$e->getMessage();
         }
+
+        $order->setStatus($this->scopeConfig->getValue("webpos/general/order_status", \Magento\Store\Model\ScopeInterface::SCOPE_STORE));
+        $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description", \Magento\Store\Model\ScopeInterface::SCOPE_STORE)), false);
+        $order->save();
         $data['errors']=$errores;
 
         return [$data];

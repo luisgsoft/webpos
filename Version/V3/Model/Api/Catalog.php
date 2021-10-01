@@ -59,7 +59,7 @@ class Catalog implements CatalogInterface
      */
     protected $_paymentConfig;
 
-    const XML_PATH_STOCK_THRESHOLD_QTY = 'cataloginventory/options/stock_threshold_qty';
+    const XML_PATH_STOCK_THRESHOLD_QTY = 'cataloginventory/options/min_qty';
 
     private $getStockItemConfiguration;
     private $productSalableQty;
@@ -73,6 +73,8 @@ class Catalog implements CatalogInterface
     protected $stockFactory;
 
     protected $reservedStock;
+    protected $getReservationsQuantity;
+    protected $sourceRepository;
 
     public function __construct(
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
@@ -92,7 +94,9 @@ class Catalog implements CatalogInterface
         \Gsoft\Webpos\Model\StockreservationFactory $reservationF,
         \Gsoft\Webpos\Model\Api\Data\StockFactory $stockFactory,
         \Gsoft\Webpos\Model\Api\Data\StocksourceFactory $stockSourceFactory,
-        \Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory $attributeFactory = null
+        \Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory $attributeFactory = null,
+        \Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface $getReservationsQuantity,
+        \Magento\InventoryApi\Api\SourceRepositoryInterface $sourceRepository
     )
     {
         $this->productRepository = $productRepository;
@@ -115,7 +119,8 @@ class Catalog implements CatalogInterface
         $this->reservesFactory = $reservationF;
         $this->stockSourceFactory=$stockSourceFactory;
         $this->stockFactory=$stockFactory;
-
+        $this->getReservationsQuantity=$getReservationsQuantity;
+        $this->sourceRepository = $sourceRepository;
     }
 
     /**
@@ -175,13 +180,13 @@ class Catalog implements CatalogInterface
             $salableQty = 0;
 
             $sourceItemsBySku = $this->getSourceItemsBySku->execute($child->getSku());
+
             $stock['sources'] = [];
             foreach ($sourceItemsBySku as $sourceItem) {
-                $quantity = $sourceItem->getQuantity();
-                $quantity -= $lowStock;
-                $quantity-=$this->getReservedQty($child->getSku(),$sourceItem->getSourceCode());
+
+                $quantity = $this->getQty($child->getSku(), $sourceItem, $lowStock);
                 $stock['sources'][] = ["qty" => $quantity, "status" => $sourceItem->getStatus(), "source_code" => $sourceItem->getSourceCode(), "source_item_id" => $sourceItem->getSourceItemId()];
-                if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock'")){
+                if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock")){
                     $stock['qty']=$quantity;
                     $stock['status']=$sourceItem->getStatus();
                 }
@@ -202,21 +207,23 @@ class Catalog implements CatalogInterface
         return $exit;
 
     }
-
-    function getReservedQty($sku, $source)
-    {
-        if ($this->reservedStock == null) {
-            $this->reservedStock=[];
-            $model = $this->reservesFactory->create();
-            $collection = $model->getCollection();
-            $collection->getSelect()->columns(['total' => new \Zend_Db_Expr('SUM(qty)')])->group("source");
-            $col=$collection->getConnection()->fetchAll($collection->getSelect());
-
-            foreach($collection as $p){
-                $this->reservedStock[$p['source']][$p['sku']]=$p['total'];
-            }
+    private function getQty($sku, $sourceItem, $lowStock){
+        if($sourceItem->getStatus()!="1") $quantity=0;
+        else {
+            $quantity = $sourceItem->getQuantity();
+            $quantity -= $lowStock;
+            $quantity += $this->getReservedQty($sku, $sourceItem->getSourceCode());
         }
-        return empty($this->reservedStock[$source][$sku])?0:$this->reservedStock[$source][$sku];
+        return $quantity;
+    }
+    private function getReservedQty($sku, $source_code)
+    {
+
+        /**@var \Magento\Inventory\Model\Source $source*/
+        //pendiente de asociar el id de almacen
+
+        return $this->getReservationsQuantity->execute($sku, 1);
+
     }
 
     /**
@@ -254,17 +261,16 @@ class Catalog implements CatalogInterface
             $sources=null;
 
             foreach ($sourceItemsBySku as $sourceItem) {
-                $source = $this->stockSourceFactory->create();
-                $quantity = $sourceItem->getQuantity();
-                $quantity -= $lowStock;
-                $quantity-=$this->getReservedQty($p->getSku(),$sourceItem->getSourceCode());
 
+                $quantity = $this->getQty($p->getSku(), $sourceItem, $lowStock);
+
+                $source = $this->stockSourceFactory->create();
                 $source->setQty($quantity);
                 $source->setStatus($sourceItem->getStatus());
                 $source->setSourceCode($sourceItem->getSourceCode());
                 $source->setSourceId($sourceItem->getSourceItemId());
                 $sources[]=$source;
-                if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock'")) {
+                if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock")) {
                     $stock->setQty($quantity);
                     $stock->setStatus($sourceItem->getStatus());
                 }

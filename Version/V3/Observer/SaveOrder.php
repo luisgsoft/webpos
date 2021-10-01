@@ -48,6 +48,7 @@ class SaveOrder
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
+
         $reservations=[];
         /* @var \Magento\Sales\Model\Order $order */
         $order = $observer->getEvent()->getData('order');

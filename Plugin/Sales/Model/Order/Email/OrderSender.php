@@ -26,7 +26,9 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
     {
 
         $terminal=$order->getData("webpos_terminal");
-        if(!empty($terminal)) return false;
+        if(!empty($terminal)){
+            if(!$this->globalConfig->getValue("webpos/general/send_email")) return false;
+        }
         $order->setSendEmail($this->identityContainer->isEnabled());
 
         if (!$this->globalConfig->getValue('sales_email/general/async_sending') || $forceSyncMode) {

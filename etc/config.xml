@@ -28,6 +28,10 @@
         <general>
             <source_stock>default</source_stock>
             <payment_description>Pagado en tienda</payment_description>
+            <send_email>0</send_email>
+            <create_shipment>1</create_shipment>
+            <create_invoice>1</create_invoice>
+            <order_status>complete</order_status>
         </general>
     </default>
 </config>

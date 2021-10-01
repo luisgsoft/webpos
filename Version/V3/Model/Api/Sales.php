@@ -169,28 +169,35 @@ class Sales implements SalesInterface
                         } else $params['custom_price'] = $item['custom_price'];
                     }else $params['custom_price'] = $item['custom_price'];
                 }
-                if (!empty($item['selected_values'])) {
-
-                    foreach ($item['selected_values'] as $att) {
-                        $options[$att['id']] = $att['value'];
+                if (!empty($item['child_id'])) {
+                    $child = $this->productFactory->create()->load($item['child_id']);
+                    $parent = $this->productFactory->create()->load($item['id']);
+                    $_product = $parent;
+                    $productAttributeOptions = $parent->getTypeInstance(true)->getConfigurableAttributesAsArray($parent);
+                    foreach ($productAttributeOptions as $option) {
+                        $options[$option['attribute_id']] = $child->getData($option['attribute_code']);
                     }
                     $params['super_attribute'] = $options;
 
+
+                  /*  foreach ($item['selected_values'] as $att) {
+                        $options[$att['id']] = $att['value'];
+                    }
+                    $params['super_attribute'] = $options;*/
+
                 }
-
-
+                $data['items'][$k]['quote_item_id'] = 0;
 
                 $obj = new\Magento\Framework\DataObject();
                 $obj->setData($params);
-                $quote->addProduct($_product, $obj);
+               $quote->addProduct($_product, $obj);
 
 
             } catch (\Exception $e) {
-
+               // echo $e->getMessage();
                  /* echo $e->getMessage();
                   print_r($e->getTraceAsString());*/
-                $data['items'][$k]['quote_item_id'] = 0;
-                $data['items'][$k]['stock'] = 0;
+                //$data['items'][$k]['stock'] = 0;
             }
         }
 
@@ -223,15 +230,34 @@ class Sales implements SalesInterface
                     $quote->getShippingAddress()->setMiddlename(".");
                 }
             }
+            $quote->setCustomerIsGuest(false);
 
 
         }
+        $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default");
+        $shippingAddress = $quote->getShippingAddress();
+        $shippingAddress->setCollectShippingRates(true)
+            ->collectShippingRates();
+        foreach($shippingAddress->getAllShippingRates() as $rate){
+            if($rate->getCode()=="freeshipping_freeshipping"){
+                $shipping_method="freeshipping_freeshipping";
+                break;
+            }
+        }
+        $shippingAddress->setShippingMethod($shipping_method);
 
         $quote->collectTotals()->save();
 
+        /**@var \Magento\Quote\Model\Quote\Item $inserted*/
         foreach ($quote->getAllItems() as $inserted) {
+            $uniqid = $inserted->getBuyRequest()->getCustomOption("webpos_item_id");
+
+            if($inserted->getParentItemId()) continue;
+
+
             foreach ($data['items'] as $k => $item) {
-                if ($inserted->getProduct()->getData("webpos_item_id") == $item['item_id']) {
+
+                if ($uniqid== $item['item_id']) {
 
                     $data['items'][$k]['quote_item_id'] = $inserted->getId();
                     if ($inserted->getCustomPrice() > 0) {
@@ -263,6 +289,7 @@ class Sales implements SalesInterface
         $data['discount_cart'] = $quote->getShippingAddress()->getDiscountDescription();
         $data['coupon_code'] = $quote->getCouponCode();
         $data['subtotal_with_discount'] = $quote->getSubtotalWithDiscount();
+        $data['shipping_amount'] = $quote->getShippingAddress()->getShippingAmount();
         $totals = $quote->getTotals();
 
         /*@var \Magento\Quote\Model\Quote\Address\Total $tax*/
@@ -290,6 +317,7 @@ class Sales implements SalesInterface
         try {
             $ruleId = $this->couponModel->loadByCode($couponCode)->getRuleId();
             $rule = $this->ruleRepository->getById($ruleId);
+
             return $rule->getDiscountAmount();
         } catch (\Exception $e) {
             return 0;
@@ -298,7 +326,8 @@ class Sales implements SalesInterface
 
     protected function spendCoupon($couponCode)
     {
-
+        //parece que se actualiza. ¿Verificar en 2.3?
+        return;
         try {
             $coupon = $this->couponModel->loadByCode($couponCode);
             $coupon->setTimesUsed($coupon->getTimesUsed() + 1);
@@ -308,7 +337,21 @@ class Sales implements SalesInterface
             return 0;
         }
     }
+    protected function updateCouponAmount($couponCode, $remainDiscount)
+    {
 
+        try {
+            $ruleId = $this->couponModel->loadByCode($couponCode)->getRuleId();
+            $rule = $this->ruleRepository->getById($ruleId);
+            $rule->setDiscountAmount($remainDiscount);
+            $rule->setUsesPerCoupon($rule->getUsesPerCoupon()+1);
+            $rule->setUsesPerCustomer($rule->getUsesPerCustomer()+1);
+            $this->ruleRepository->save($rule);
+            return $rule->$remainDiscount;
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
     /**
      * @param mixed $data
      * @return array|mixed
@@ -334,14 +377,17 @@ class Sales implements SalesInterface
                             }
                         }
                     }
+                    $coupon_total = $total_coupons;
+
                     $data['payments'][] = ['code' => "webposcoupon", 'label' => 'app.quote.payment_coupon', 'name' => 'Vale descuento', 'delivered' => $total_coupons, 'reference' => $data['coupon_code']];
                     $spend_coupon = $data['coupon_code'];
                 }
             }
+            $quote->setCustomerIsGuest(0);
             if($quote->getCustomerId()==0) {
                 $customer = $this->customerRepository->getById($this->scopeConfig->getValue('webpos/general/guest_customer', \Magento\Store\Model\ScopeInterface::SCOPE_STORE));
                 $quote->assignCustomer($customer);
-                $quote->setCustomerIsGuest(0);
+
 
                 $billingAddressId = $customer->getDefaultBilling();
                 $billingAddress = $this->addressRepository->getById($billingAddressId);
@@ -369,11 +415,46 @@ class Sales implements SalesInterface
             $shippingAddress = $quote->getShippingAddress();
             $shippingAddress->setCollectShippingRates(true)
                 ->collectShippingRates()
-                ->setShippingMethod('webpos_webpos');
+                ->setShippingMethod( $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default"));
 
 
-            $quote/*->setCouponCode('')*/->collectTotals()->save();
+            $quote/*->setCouponCode('')*/->collectTotals();
+
+            $remain_coupon_amount=0;
+           if($total_coupons > 0) {
+               $discountAmount=0;
+               foreach($quote->getAllVisibleItems() as $item){
+                   $discountAmount += ($item->getDiscountAmount() ? $item->getDiscountAmount() : 0);
+               }
+
+              if($total_coupons > $discountAmount) {
+                  if (!empty($data['payments'])) {
+                      foreach ($data['payments'] as $k => $paymentItem) {
+                          if ($paymentItem['code'] == "webposcoupon") {
+                              $paymentItem['delivered']=$discountAmount;
+                              $data['payments'][$k]=$paymentItem;
+
+                              $payment->setAdditionalInformation("webpos", json_encode($data['payments']));
+                              $quote->setPayment($payment);
+                              break;
+                          }
+                      }
+                  }
+                  $remain_coupon_amount = $total_coupons - $discountAmount;
+
+
+              }
+           }
+            $quote->save();
+
+
             $order = $this->quoteManagement->submit($quote);
+
+            if($remain_coupon_amount > 0){
+                $this->updateCouponAmount($data['coupon_code'], $remain_coupon_amount);
+
+            }
+
             $data['increment_id'] = $order->getIncrementId();
             $data['id'] = $order->getId();
             if (!empty($spend_coupon)) $this->spendCoupon($spend_coupon);
@@ -383,47 +464,52 @@ class Sales implements SalesInterface
         $errores=[];
 
         try {
-            // load order from database
-            if ($order->canShip()) {
-                $items = [];
+            if($this->scopeConfig->getValue("webpos/general/create_shipment")) {
+                // load order from database
+                if ($order->canShip()) {
+                    $items = [];
 
-                foreach($order->getAllItems() as $item) {
-                    $items[$item->getItemId()] = $item->getQtyOrdered();
+                    foreach ($order->getAllItems() as $item) {
+                        $items[$item->getItemId()] = $item->getQtyOrdered();
+                    }
+
+
+                    // create the shipment
+                    $shipment = $this->shipmentFactory->create($order, $items);
+                    $shipment->getExtensionAttributes()->setSourceCode($this->scopeConfig->getValue("webpos/general/source_stock"));
+                    $shipment->register();
+                    // save the newly created shipment
+                    $transactionSave = $this->transactionFactory->create()->addObject($shipment);
+                    $transactionSave->save();
+                    $data['shipment_id'] = $shipment->getId();
                 }
-
-
-                // create the shipment
-                $shipment = $this->shipmentFactory->create($order, $items);
-                $shipment->getExtensionAttributes()->setSourceCode($data['source']);
-                $shipment->register();
-                // save the newly created shipment
-                $transactionSave =  $this->transactionFactory->create()->addObject($shipment);
-                $transactionSave->save();
-                $data['shipment_id'] = $shipment->getId();
             }
 
         } catch (\Exception $e) {
             $errores[]=$e->getMessage();
         }
         try {
-
+            if($this->scopeConfig->getValue("webpos/general/create_invoice")) {
                 //generate invoice
                 $invoice = $this->invoiceService->prepareInvoice($order);
                 $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
                 $invoice->register();
                 $invoice->getOrder()->setCustomerNoteNotify(false);
                 $invoice->getOrder()->setIsInProcess(true);
-                $order->setState("complete");
-                $order->setStatus("complete");
+             /*   $order->setState("complete");
+                $order->setStatus("complete");*/
                 $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description")), false);
                 $transactionSave = $this->transactionFactory->create()->addObject($invoice)->addObject($invoice->getOrder());
                 $transactionSave->save();
                 $data['invoice_id'] = $invoice->getId();
+            }
 
 
         } catch (\Exception $e) {
             $errores[]=$e->getMessage();
         }
+        $order->setStatus($this->scopeConfig->getValue("webpos/general/order_status"));
+        $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description")), false);
         $data['errors']=$errores;
 
         return [$data];
