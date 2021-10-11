@@ -28,5 +28,20 @@
         <plugin name="creditmemovalidation" type="Gsoft\Webpos\Plugin\Creditmemo\Validation\QuantityValidator"/>
     </type>
 
-
+    <type name="Magento\Sales\Model\Order\Validation\CanRefund">
+        <plugin name="order_can_refund" type="Gsoft\Webpos\Plugin\Order\Validation\CanRefund"/>
+    </type>
+    <type name="Gsoft\Webpos\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="Gsoft\Webpos\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">webpos</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">Gsoft\Webpos\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

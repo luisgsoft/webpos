@@ -55,6 +55,11 @@
                     <label>Order status</label>
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
                 </field>
+                <field id="is_in_stock" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="select">
+                    <label>Replenish stock</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>In some versions of magento there is a bug whereby the is_in_stock field is not updated when a creditmemo is created</comment>
+                </field>
             </group>
         </section>
         <section id="payment">
