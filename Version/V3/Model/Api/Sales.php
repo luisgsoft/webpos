@@ -372,14 +372,14 @@ class Sales implements SalesInterface
                     if (!empty($data['payments'])) {
                         foreach ($data['payments'] as $k => $payment) {
                             if ($payment['code'] == "webposcoupon") {
-                                unset($quote['payments'][$k]);
+                                unset($data['payments'][$k]);
                                 break;
                             }
                         }
                     }
                     $coupon_total = $total_coupons;
 
-                    $data['payments'][] = ['code' => "webposcoupon", 'label' => 'app.quote.payment_coupon', 'name' => 'Vale descuento', 'delivered' => $total_coupons, 'reference' => $data['coupon_code']];
+                    $data['payments'][] = ['code' => "webposcoupon", 'label' => 'app.quote.payment_coupon', 'name' => 'Vale descuento', 'delivered' => $total_coupons, 'reference' => $data['coupon_code'], 'coupon' => $data['coupon_code']];
                     $spend_coupon = $data['coupon_code'];
                 }
             }
@@ -403,7 +403,10 @@ class Sales implements SalesInterface
             $payment = $quote->getPayment();
             $payment_code='webposcash';
             if (!empty($data['payments'])) {
-                $payment_code=$data['payments'][0]['code'];
+                foreach($data['payments'] as $payment_item){
+                    $payment_code = $payment_item['code'];
+                    break;
+                }
             }
             $payment->setMethod($payment_code);
 
