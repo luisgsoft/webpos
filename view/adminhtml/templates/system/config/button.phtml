@@ -1,0 +1,41 @@
+<script>
+    require([
+        'jquery',
+        'prototype'
+    ], function ($) {
+
+        $('#custom_button').click(function () {
+            var params = {};
+            new Ajax.Request('<?php echo $block->getCustomUrl() ?>', {
+                parameters: params,
+                loaderArea: false,
+                asynchronous: true,
+                onCreate: function () {
+                    $('#custom_button_response_message').text('');
+                },
+                onSuccess: function (transport) {
+
+                    var resultText = '';
+                    if (transport.status > 200) {
+                        resultText = transport.statusText;
+                    } else {
+                        var response = JSON.parse(transport.responseText);
+                        if(response.error!==0){
+                            alert(response.msg);
+                        }else{
+                            alert("Actualización existosa.\nEs posible que tengas que hacer un setup:upgrade y un setup:di:compile");
+                            location.reload();
+                        }
+
+                    }
+                    $('#custom_button_response_message').text(resultText);
+
+                }
+            });
+        });
+    });
+</script>
+<?php echo $block->getButtonHtml(); ?>
+<p>
+    <span id="custom_button_response_message"></span>
+</p>
