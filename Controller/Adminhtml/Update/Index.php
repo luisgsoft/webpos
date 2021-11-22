@@ -52,6 +52,7 @@ class Index extends \Magento\Backend\App\Action
      */
     public function execute()
     {
+        if (!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
         $output=['error'=>0];
         $path = $this->directoryList->getPath('var').DS."package.zip";
         try {
