@@ -129,6 +129,23 @@ class UpgradeData implements UpgradeDataInterface
         $setup->startSetup();
         /** @var CustomerSetup $customerSetup */
 
+        if (version_compare($context->getVersion(), '1.0.12', '<')) {
+            $connection = $setup->getConnection();
+            $grid = $setup->getTable('sales_order_grid');
+            $order = $setup->getTable('sales_order');
+
+            $connection->query(
+                $connection->updateFromSelect(
+                    $connection->select()
+                        ->join(
+                            $order,
+                            sprintf('%s.entity_id = %s.entity_id', $grid, $order),
+                            ['webpos_terminal', 'webpos_user']
+                        ),
+                    $grid
+                )
+            );
+        }
 
         if (version_compare($context->getVersion(), '1.0.1', '<')) {
 

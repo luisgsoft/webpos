@@ -17,6 +17,27 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         $installer->startSetup();
 
+        if (version_compare($context->getVersion(), '1.0.12', '<')) {
+            $connection = $installer->getConnection();
+
+            $connection->addColumn(
+                $installer->getTable('sales_order_grid'),
+                'webpos_user',
+                [
+                    'type' => Table::TYPE_TEXT,
+                    'comment' => 'Webpos Seller'
+                ]
+            );
+            $connection->addColumn(
+                $installer->getTable('sales_order_grid'),
+                'webpos_terminal',
+                [
+                    'type' => Table::TYPE_TEXT,
+                    'comment' => 'Webpos Terminal'
+                ]
+            );
+
+        }
 
         if (version_compare($context->getVersion(), '1.0.3', '<')) {
 

@@ -44,4 +44,13 @@
             </argument>
         </arguments>
     </type>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid">
+        <arguments>
+
+            <argument name="columns" xsi:type="array">
+                <item name="webpos_user" xsi:type="string">sales_order.webpos_user</item>
+                <item name="webpos_terminal" xsi:type="string">sales_order.webpos_terminal</item>
+            </argument>
+        </arguments>
+    </virtualType>
 </config>
