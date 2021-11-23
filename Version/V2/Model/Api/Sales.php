@@ -3,6 +3,7 @@
 namespace Gsoft\Webpos\Version\V2\Model\Api;
 
 use Gsoft\Webpos\Api\SalesInterface;
+use PHPUnit\Runner\Exception;
 
 class Sales implements SalesInterface
 {
@@ -243,7 +244,7 @@ class Sales implements SalesInterface
             $quote->setTotalsCollectedFlag(false);
             $shippingAddress->setCollectShippingRates(true)
                 ->collectShippingRates();
-            $shipping_method="freeshipping_freeshipping";
+            $shipping_method="webpos_webpos";
             $shippingAddress->setShippingMethod($shipping_method);
 
             $quote->collectTotals();
@@ -285,6 +286,7 @@ class Sales implements SalesInterface
         $data['coupon_code'] = $quote->getCouponCode();
         $data['subtotal_with_discount'] = $quote->getSubtotalWithDiscount();
         $data['shipping_amount'] = $quote->getShippingAddress()->getShippingAmount();
+        $data['shipping_method'] = $shipping_method;
         $totals = $quote->getTotals();
 
         /*@var \Magento\Quote\Model\Quote\Address\Total $tax*/
@@ -350,12 +352,12 @@ class Sales implements SalesInterface
                     if (!empty($data['payments'])) {
                         foreach ($data['payments'] as $k => $payment) {
                             if ($payment['code'] == "webposcoupon") {
-                                unset($quote['payments'][$k]);
+                                unset($data['payments'][$k]);
                                 break;
                             }
                         }
                     }
-                    $data['payments'][] = ['code' => "webposcoupon", 'label' => 'app.quote.payment_coupon', 'name' => 'Vale descuento', 'delivered' => $total_coupons, 'reference' => $data['coupon_code']];
+                    $data['payments'][] = ['code' => "webposcoupon", 'label' => 'app.quote.payment_coupon', 'name' => 'Vale descuento', 'delivered' => $total_coupons, 'reference' => $data['coupon_code'], 'coupon' => $data['coupon_code']];
                     $spend_coupon = $data['coupon_code'];
                 }
             }
@@ -378,7 +380,11 @@ class Sales implements SalesInterface
             $payment = $quote->getPayment();
             $payment_code='webposcash';
             if (!empty($data['payments'])) {
-                $payment_code=$data['payments'][0]['code'];
+                // $payment_code=$data['payments'][0]['code'];
+                foreach($data['payments'] as $payment_item){
+                    $payment_code = $payment_item['code'];
+                    break;
+                }
             }
             $payment->setMethod($payment_code);
 
@@ -398,7 +404,19 @@ class Sales implements SalesInterface
 
             $shippingAddress->setShippingMethod($shipping_method);
 
-            $quote->setCouponCode('')->collectTotals()->save();
+            $free_shipping_qty=$this->scopeConfig->getValue('carriers/freeshipping/free_shipping_subtotal', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            $quote/*->setCouponCode('')*/->collectTotals();
+            if( $shipping_method!=="freeshipping_freeshipping" && $free_shipping_qty < $quote->getSubtotalWithDiscount()){
+                $quote->setTotalsCollectedFlag(false);
+                $shippingAddress->setCollectShippingRates(true)
+                    ->collectShippingRates();
+                $shipping_method="webpos_webpos";
+                $shippingAddress->setShippingMethod($shipping_method);
+
+                $quote->collectTotals();
+            }
+
+            $quote->save();
 
             $order = $this->quoteManagement->submit($quote);
             $data['increment_id'] = $order->getIncrementId();

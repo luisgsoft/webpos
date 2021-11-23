@@ -2,9 +2,6 @@
 namespace Gsoft\Webpos\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
-use Magento\InventoryConfigurationApi\Api\GetStockItemConfigurationInterface;
-use Magento\InventorySalesApi\Api\GetProductSalableQtyInterface;
-use Magento\InventorySalesApi\Api\StockResolverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class CancelOrder implements ObserverInterface

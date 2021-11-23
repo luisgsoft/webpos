@@ -94,7 +94,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             }
             $remain=0;
             //vamos a obtener en porcentaje cuanto descuento se aplica
-           if($this->scopeConfig->getValue("tax/calculation/discount_tax")) {
+            if($this->scopeConfig->getValue("tax/calculation/discount_tax")) {
                 $remain = $TotalAmountTaxed;
             }else{
                 $remain = $TotalAmount_without_tax;
