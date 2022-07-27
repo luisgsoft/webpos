@@ -53,4 +53,8 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <type name="Magento\Quote\Model\Quote\Item">
+        <plugin name="quote_different_lines" type="Gsoft\Webpos\Plugin\Quote\Item"/>
+    </type>
 </config>

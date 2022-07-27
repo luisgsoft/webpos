@@ -143,7 +143,7 @@ class Sales implements SalesInterface
         foreach ($data['items'] as $k => $item) {
             try {
                 // $quoteItems = $quote->getItems();
-
+                if (!empty($item['customized']) && $item['custom_price']==0) $item['custom_price']=0.0001;
                 $_product = $this->productRepository->getById($item['id']);
                 /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
 
@@ -161,14 +161,16 @@ class Sales implements SalesInterface
 
                 //iva
                 $rate = $this->getTaxPercent($_product);
+                $item['original_custom_price'] = $item['custom_price'];
 
-                if (!empty($item['custom_price'])){
+                if (!empty($item['customized'])){
                     if(!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
                         if ($rate > 0) {
                             $params['custom_price'] = $item['custom_price'] / (1 + $rate * 0.01);
                         } else $params['custom_price'] = $item['custom_price'];
                     }else $params['custom_price'] = $item['custom_price'];
                 }
+
                 if (!empty($item['child_id'])) {
                     $child = $this->productFactory->create()->load($item['child_id']);
                     $parent = $this->productFactory->create()->load($item['id']);
@@ -264,10 +266,11 @@ class Sales implements SalesInterface
                         //comprobamos si el iva esta incluido en los precios
                         if(!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
                             $data['items'][$k]['custom_price_without_tax'] = $inserted->getCustomPrice();
-                            $data['items'][$k]['custom_price'] = round($inserted->getCustomPrice() * (1 + $inserted->getTaxPercent() * 0.01), 2);
+                            $data['items'][$k]['custom_price'] = round($inserted->getCustomPrice() * (1 + $inserted->getTaxPercent() * 0.01), 4);
                         }else{
+
                             $data['items'][$k]['custom_price_without_tax'] = $inserted->getCustomPrice();
-                            $data['items'][$k]['custom_price'] = round($inserted->getCustomPrice() * (1 + $inserted->getTaxPercent() * 0.01), 2);
+                            $data['items'][$k]['custom_price'] = $inserted->getPriceInclTax() /*$inserted->getCustomPrice() * (1 + $inserted->getTaxPercent() * 0.01)*/;
                         }
                     } else {
                         $data['items'][$k]['custom_price'] = 0;
