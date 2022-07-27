@@ -82,26 +82,30 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
             $connection = $installer->getConnection();
             $connection->addColumn($installer->getTable('quote'), 'webpos_discount_fixed', [
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_FLOAT,
+                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                 'comment' => 'Descuento fijo',
+                'length' => '10,4',
                 'nullable' => true,
 
             ]);
             $connection->addColumn($installer->getTable('quote'), 'webpos_discount_percent', [
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_FLOAT,
+                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                 'comment' => 'Descuento porcentual',
+                'length' => '10,4',
                 'nullable' => true,
 
             ]);
             $connection->addColumn($installer->getTable('sales_order'), 'webpos_discount_fixed', [
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_FLOAT,
+                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                 'comment' => 'Descuento fijo',
+                'length' => '10,4',
                 'nullable' => true,
 
             ]);
             $connection->addColumn($installer->getTable('sales_order'), 'webpos_discount_percent', [
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_FLOAT,
+                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
                 'comment' => 'Descuento porcentual',
+                'length' => '10,4',
                 'nullable' => true,
 
             ]);

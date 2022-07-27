@@ -37,6 +37,8 @@ class Stock
             $this->connection->query($sql);
             $sql = "update inventory_source_item set status=1 where quantity > 0";
             $this->connection->query($sql);
+            $sql = "update cataloginventory_stock_status set stock_status=1 where qty > 0";
+            $this->connection->query($sql);
             $indexer = $this->indexerFactory->create();
             $indexer->load("cataloginventory_stock");
             $indexer->reindexAll();

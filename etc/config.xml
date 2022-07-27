@@ -19,6 +19,7 @@
         <carriers>
             <webpos>
                 <active>1</active>
+                <enabled_frontend>0</enabled_frontend>
                 <sallowspecific>0</sallowspecific>
                 <model>Gsoft\Webpos\Model\Carrier\Shipping</model>
                 <name>Punto de venta</name>

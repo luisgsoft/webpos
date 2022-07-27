@@ -129,6 +129,11 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="enabled_frontend" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="0" translate="label" type="select">
+                    <label>Enabled in frontend</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Show store in webpos</comment>
+                </field>
                 <field id="name" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Method Name</label>
                 </field>

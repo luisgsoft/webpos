@@ -26,6 +26,7 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
 
 
     protected $quote;
+    protected $state;
 
     /**
      * Shipping constructor.
@@ -45,12 +46,14 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
         \Magento\Quote\Model\Quote\Address\RateResult\MethodFactory $rateMethodFactory,
         \Magento\Framework\App\ResourceConnection $_db,
         \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Framework\App\State $state,
         array $data = []
     ) {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
         $this->db=$_db->getConnection();
         $this->quote = $checkoutSession->getQuote();
+        $this->state=$state;
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
 
@@ -64,9 +67,6 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
         return [$this->_code => $this->getConfigData('name')];
     }
 
-    /**
-     * @return float
-     */
 
 
     /**
@@ -76,8 +76,10 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
     public function collectRates(RateRequest $request)
     {
 
-        if (!$this->getConfigFlag('active')) {
-            return false;
+        if($this->state->getAreaCode()!=="webapi_rest") {
+            if (!$this->getConfigFlag('enabled_frontend')) {
+                return false;
+            }
         }
 
         /** @var \Magento\Shipping\Model\Rate\Result $result */
