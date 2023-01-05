@@ -81,7 +81,11 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
                 return false;
             }
         }
-
+        if(strpos($_SERVER['HTTP_REFERER'], "/checkout")!==false){
+            if (!$this->getConfigFlag('enabled_frontend')) {
+                return false;
+            }
+        }
         /** @var \Magento\Shipping\Model\Rate\Result $result */
         $result = $this->_rateResultFactory->create();
         foreach($this->getAllowedMethods() as $code=>$name) {

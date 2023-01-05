@@ -291,15 +291,15 @@ class Sales implements SalesInterface
         $data['discount_amount'] = abs($quote->getShippingAddress()->getDiscountAmount());
         $data['discount_cart'] = $quote->getShippingAddress()->getDiscountDescription();
         $data['coupon_code'] = $quote->getCouponCode();
-        $data['subtotal_with_discount'] = $quote->getSubtotalWithDiscount();
-        $data['shipping_amount'] = $quote->getShippingAddress()->getShippingAmount();
+        $data['subtotal_with_discount'] = max(0, $quote->getSubtotalWithDiscount());
+        $data['shipping_amount'] = max(0,$quote->getShippingAddress()->getShippingAmount());
         $totals = $quote->getTotals();
 
         /*@var \Magento\Quote\Model\Quote\Address\Total $tax*/
         $tax = !empty($totals['tax']) ? $totals['tax'] : null;
         if (!empty($tax)) $data['tax'] = $tax->getData('value');
-        $data['subtotal'] = $quote->getSubtotal();
-        $data['grand_total'] = $quote->getGrandTotal();
+        $data['subtotal'] = max(0, $quote->getSubtotal());
+        $data['grand_total'] = max(0, $quote->getGrandTotal());
         $data['payment_methods']=[];
         $payments=$this->scopeConfig->getValue("webpos/general/adminpayments", \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $quote->getStoreId());
         if(empty($payments)) $payments="webposcash";

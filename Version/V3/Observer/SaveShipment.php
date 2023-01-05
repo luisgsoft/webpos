@@ -67,7 +67,7 @@ class SaveShipment implements ObserverInterface
                         $pending -= $total;
                     }
                     //marco como enviadas las que no se han apartado, para que la tienda se entere
-                    $sql = "update webpos_stock_reservation  set shipped=1 where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " limit " . $pending;
+                    $sql = "update webpos_stock_reservation  set shipped=1 where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " limit " .intval(ceil($pending));
 
                     $this->resource->getConnection()->query($sql);
 
@@ -75,7 +75,7 @@ class SaveShipment implements ObserverInterface
                 }
 
             }
-        }catch(Exception $e){
+        }catch(\Exception $e){
             throw $e;
         }
 
