@@ -16,7 +16,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $installer = $setup;
 
         $installer->startSetup();
-
+        if (version_compare($context->getVersion(), '1.0.13', '<')) {
+            $connection = $installer->getConnection();
+			 $connection->query("ALTER TABLE `webpos_stock_reservation` CHANGE `shipped` `shipped` INT(10) NOT NULL;");
+        }
         if (version_compare($context->getVersion(), '1.0.12', '<')) {
             $connection = $installer->getConnection();
 

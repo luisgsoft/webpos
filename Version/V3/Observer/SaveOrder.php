@@ -74,17 +74,17 @@ class SaveOrder
         }
 
         foreach($reservations as $reserve){
-            for($i=0;$i<$reserve['qty'];$i++) {
+         //   for($i=0;$i<$reserve['qty'];$i++) {
                 $r = $this->reservesFactory->create();
                 $r->setData("order_id", $order->getId());
                 $r->setData("item_id", $reserve['item']->getId());
                 $r->setData("sku", $reserve['item']->getSku());
-                $r->setData("qty", 1);
+                $r->setData("qty", $reserve['qty']);
                 $r->setData("source", $reserve['source']);
                 $r->setData("created_at", time());
                 $r->setData("updated_at", time());
                 $r->save();
-            }
+           // }
         }
 
 

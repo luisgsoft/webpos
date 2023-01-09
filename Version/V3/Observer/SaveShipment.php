@@ -51,7 +51,7 @@ class SaveShipment implements ObserverInterface
             /**@var \Magento\Sales\Model\Order\Shipment\Item $child */
             foreach ($shipment->getAllItems() as $child) {
 
-                $sql = "select count(*) from webpos_stock_reservation where item_id=" . $child->getOrderItemId() . " AND accepted=1 AND source=" . $this->resource->getConnection()->quote($source);
+                $sql = "select sum(qty) from webpos_stock_reservation where item_id=" . $child->getOrderItemId() . " AND accepted=1 AND source=" . $this->resource->getConnection()->quote($source);
 
                 $total = $this->resource->getConnection()->fetchOne($sql);
 
@@ -59,15 +59,16 @@ class SaveShipment implements ObserverInterface
                     //todas las unidades se han apartado
                     $this->resource->getConnection()->query("Delete from webpos_stock_reservation where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " AND source=" . $this->resource->getConnection()->quote($source) . " AND accepted=1 limit " . $child->getQty());
                 } else {
+					
                     //faltan unidades por apartar, hay que avisar a la tienda
                     $pending = $child->getQty();
-                    if ($total > 0) {
+                  /*  if ($total > 0) {
                         //borro las que sí están apartadas por la tienda
                         $this->resource->getConnection()->query("Delete from webpos_stock_reservation where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " AND source=" . $this->resource->getConnection()->quote($source) . " AND accepted=1 limit " . $child->getQty());
                         $pending -= $total;
-                    }
+                    }*/
                     //marco como enviadas las que no se han apartado, para que la tienda se entere
-                    $sql = "update webpos_stock_reservation  set shipped=1 where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " limit " .intval(ceil($pending));
+                    $sql = "update webpos_stock_reservation  set shipped=shipped+".$child->getQty()." where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId();
 
                     $this->resource->getConnection()->query($sql);
 
@@ -75,7 +76,7 @@ class SaveShipment implements ObserverInterface
                 }
 
             }
-        }catch(\Exception $e){
+        }catch(Exception $e){
             throw $e;
         }
 
