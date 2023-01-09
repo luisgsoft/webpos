@@ -81,7 +81,7 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
                 return false;
             }
         }
-        if(strpos($_SERVER['HTTP_REFERER'], "/checkout")!==false){
+        if(!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], "/checkout")!==false){
             if (!$this->getConfigFlag('enabled_frontend')) {
                 return false;
             }
