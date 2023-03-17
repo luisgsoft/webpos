@@ -15,19 +15,20 @@ class SaveShipment implements ObserverInterface
     private $getsource;
 
     private $resource;
-
+    private $scopeConfig;
     /**
      * @param \Magento\Framework\DataObject\Copy $objectCopyService
      * ...
      */
     public function __construct(
         \Magento\InventoryShipping\Model\ResourceModel\ShipmentSource\GetSourceCodeByShipmentId $GetSourceCodeByShipmentId,
-        \Magento\Framework\App\ResourceConnection $resource
+        \Magento\Framework\App\ResourceConnection $resource,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
     )
     {
         $this->getsource = $GetSourceCodeByShipmentId;
         $this->resource = $resource;
-
+        $this->scopeConfig = $scopeConfig;
 
     }
 
@@ -37,7 +38,7 @@ class SaveShipment implements ObserverInterface
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
 
-
+        if($this->scopeConfig->getValue("webpos/general/disallow_tracking")) return;
         /* @var \Magento\Sales\Model\Order\Shipment $shipment */
         $shipment = $observer->getEvent()->getData('shipment');
         /* @var \Magento\Sales\Model\Order $order */
@@ -59,7 +60,7 @@ class SaveShipment implements ObserverInterface
                     //todas las unidades se han apartado
                     $this->resource->getConnection()->query("Delete from webpos_stock_reservation where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " AND source=" . $this->resource->getConnection()->quote($source) . " AND accepted=1 limit " . $child->getQty());
                 } else {
-					
+
                     //faltan unidades por apartar, hay que avisar a la tienda
                     $pending = $child->getQty();
                   /*  if ($total > 0) {

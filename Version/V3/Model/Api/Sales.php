@@ -202,7 +202,10 @@ class Sales implements SalesInterface
                 //$data['items'][$k]['stock'] = 0;
             }
         }
-
+        if(empty($data['id_customer']) || !$data['id_customer']>0) {
+            $id_guest=$this->scopeConfig->getValue("webpos/general/guest_customer");
+            if(!empty($id_guest)) $data['id_customer'] = $id_guest;
+        }
         if(empty($data['id_customer']) || !$data['id_customer']>0) {
             $quote->setCustomerEmail("webpos@mail.to");
             $quote->setCustomerFirstname("Compra en tienda");

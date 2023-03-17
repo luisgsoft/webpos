@@ -61,6 +61,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>In some versions of magento there is a bug whereby the is_in_stock field is not updated when a creditmemo is created</comment>
                 </field>
+                <field id="disallow_tracking" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="select">
+                    <label>Desactivar reservations</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>No guardar registro de pedidos online para avisar al webpos</comment>
+                </field>
                 <field id="button_id" translate="label" type="button" sortOrder="10000" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Update to last version</label>
                     <frontend_model>Gsoft\Webpos\Block\System\Config\Button</frontend_model>
