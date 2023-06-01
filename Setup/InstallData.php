@@ -9,36 +9,65 @@ use Magento\Framework\Setup\InstallDataInterface;
 
 class InstallData implements InstallDataInterface
 {
-    private $eavSetupFactory;
 
-    public function __construct(EavSetupFactory $eavSetupFactory)
+    protected $scopeConfig;
+    protected $directoryList;
+    protected $productMetadata;
+
+    public function __construct(
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Framework\App\Filesystem\DirectoryList    $directoryList,
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata)
     {
-        $this->eavSetupFactory = $eavSetupFactory;
+        $this->scopeConfig = $scopeConfig;
+        $this->directoryList = $directoryList;
+        $this->productMetadata = $productMetadata;
     }
-
+    protected function isVersionGreatherOrEqual($version){
+        if (version_compare($this->productMetadata->getVersion(), $version, ">=")) return true;
+        else return false;
+    }
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         $setup->startSetup();
-
-        /*$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
-
-        $eavSetup->addAttribute(
-            \Magento\Catalog\Model\Category::ENTITY,
-            'category_video',
-            [
-                'type' => 'text',
-                'label' => 'Video Embed',
-                'input' => 'textarea',
-                'required' => false,
-                'sort_order' => 4,
-                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_STORE,
-                'wysiwyg_enabled' => true,
-                'is_html_allowed_on_front' => true,
-                'group' => 'General Information',
-            ]
-        );*/
-
+        $this->execute();
         $setup->endSetup();
+    }
+
+    public function execute()
+    {
+        if (!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
+        $output = ['error' => 0];
+        $path = $this->directoryList->getPath('var') . DS . "package.zip";
+        try {
+            $path_extract = $this->directoryList->getPath('app') . DS . 'code' . DS . 'Gsoft' . DS;
+            if ($this->isVersionGreatherOrEqual("2.3")) {
+                $this->removeDir($path_extract . DS . "Webpos" . DS . "Version" . DS . "V2");
+            } else {
+                $this->removeDir($path_extract . DS . "Webpos" . DS . "Version" . DS . "V3");
+            }
+
+        } catch (\Exception $e) {
+            $output['error'] = 1;
+            $output['msg'] = $e->getMessage();
+        }
+     
+    }
+
+    private function removeDir($dir)
+    {
+        if(!file_exists($dir)) return;
+        $it = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $files = new \RecursiveIteratorIterator($it,
+            \RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
+        rmdir($dir);
     }
 
 }

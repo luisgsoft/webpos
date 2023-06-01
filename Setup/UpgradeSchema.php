@@ -16,7 +16,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $installer = $setup;
 
         $installer->startSetup();
-        
+
 
         if (version_compare($context->getVersion(), '1.0.3', '<')) {
 
@@ -113,8 +113,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         }
         if (version_compare($context->getVersion(), '1.0.8', '<')) {
+
             $connection = $installer->getConnection();
-            $connection->query('CREATE TABLE `webpos_stock_reservation` (
+            $connection->query('CREATE TABLE IF NOT EXISTS `webpos_stock_reservation` (
                   `id` int(11) NOT NULL,
                   `order_id` int(10) UNSIGNED NOT NULL,
                   `item_id` int(11) UNSIGNED NOT NULL,
@@ -203,7 +204,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection = $installer->getConnection();
 			 $connection->query("ALTER TABLE `webpos_stock_reservation` CHANGE `shipped` `shipped` INT(10) NOT NULL;");
         }
-       
+
         if (version_compare($context->getVersion(), '1.0.14', '<')) {
 
             $connection = $installer->getConnection();

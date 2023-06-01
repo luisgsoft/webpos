@@ -70,13 +70,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>No guardar registro de pedidos online para avisar al webpos</comment>
                 </field>
-                <field id="button_id" translate="label" type="button" sortOrder="10000" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Update to last version</label>
-                    <frontend_model>Gsoft\Webpos\Block\System\Config\Button</frontend_model>
-                </field>
-                <field id="update_url" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="9999" translate="label">
-                    <label>Url descarga</label>
-                </field>
             </group>
         </section>
         <section id="payment">
