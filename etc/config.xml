@@ -36,6 +36,7 @@
                 <create_invoice>1</create_invoice>
                 <order_status>complete</order_status>
                 <is_in_stock>0</is_in_stock>
+                <stock_item>1</stock_item>
                 <update_url>https://magentowebpos.estamosenbeta.com/pub/media/Webpos.zip</update_url>
             </webpos>
         </general>

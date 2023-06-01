@@ -36,6 +36,10 @@
                     <source_model>Gsoft\Webpos\Model\Config\Source\Stocksources</source_model>
                     <comment>Solo para magento 2.3 en adelante</comment>
                 </field>
+                <field id="stock_item" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="10" translate="label" >
+                    <label>Default stock Id</label>
+                    <comment>Id del stock ID</comment>
+                </field>
                 <field id="payment_description" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
                     <label>Texto descripción pago</label>
                 </field>

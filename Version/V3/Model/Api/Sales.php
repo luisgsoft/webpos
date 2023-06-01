@@ -32,6 +32,7 @@ class Sales implements SalesInterface
     protected $shipmentFactory;
     protected $taxCalculation;
     protected $paymentMethodRepository;
+    protected $eventManager;
 
 
     public function __construct(
@@ -58,7 +59,8 @@ class Sales implements SalesInterface
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
         \Magento\Sales\Model\Order\ShipmentRepository $shipmentRepository,
         \Magento\Sales\Model\Order\ShipmentFactory $shipmentFactory,
-        \Magento\Tax\Model\Calculation $_taxCalculation
+        \Magento\Tax\Model\Calculation $_taxCalculation,
+        \Magento\Framework\Event\ManagerInterface                    $eventManager
 
 
     )
@@ -89,6 +91,7 @@ class Sales implements SalesInterface
         $this->shipmentRepository = $shipmentRepository;
         $this->taxCalculation=$_taxCalculation;
         $this->paymentMethodRepository=$PaymentMethodManagementInterface;
+        $this->eventManager=$eventManager;
     }
 
     protected function getTaxPercent($product){
@@ -141,6 +144,7 @@ class Sales implements SalesInterface
 
         if (!empty($data['coupon_code'])) $quote->setCouponCode($data['coupon_code']);
         foreach ($data['items'] as $k => $item) {
+            if(!empty($item['gift'])) continue;
             try {
                 // $quoteItems = $quote->getItems();
                 if (!empty($item['customized']) && $item['custom_price']==0) $item['custom_price']=0.0001;
@@ -190,7 +194,7 @@ class Sales implements SalesInterface
                 }
                 $data['items'][$k]['quote_item_id'] = 0;
 
-                $obj = new\Magento\Framework\DataObject();
+                $obj = new \Magento\Framework\DataObject();
                 $obj->setData($params);
                $quote->addProduct($_product, $obj);
 
@@ -236,9 +240,14 @@ class Sales implements SalesInterface
                 }
             }
             $quote->setCustomerIsGuest(false);
+            $customer_name = $Icustomer->getFirstname() . " " . $Icustomer->getLastname();
 
+            $this->eventManager->dispatch('gsoft_webpos_before_returncustomer_name', ['customer_name' => &$customer_name, "quote" => $quote, "customer" => $Icustomer]);
+
+            $data['customer_name'] = $customer_name;
 
         }
+
         $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default");
         $shippingAddress = $quote->getShippingAddress();
         $shippingAddress->setCollectShippingRates(true)
@@ -253,17 +262,24 @@ class Sales implements SalesInterface
 
         $quote->collectTotals()->save();
 
+        $cloned_items=[];
+        foreach ($data['items'] as $k => $item) {
+            if(empty($item['gift'])){
+                $cloned_items[]=$item;
+            }
+        }
+        $data['items']=$cloned_items;
         /**@var \Magento\Quote\Model\Quote\Item $inserted*/
         foreach ($quote->getAllItems() as $inserted) {
             $uniqid = $inserted->getBuyRequest()->getCustomOption("webpos_item_id");
 
             if($inserted->getParentItemId()) continue;
 
-
+            $found = false;
             foreach ($data['items'] as $k => $item) {
 
                 if ($uniqid== $item['item_id']) {
-
+                    $found = true;
                     $data['items'][$k]['quote_item_id'] = $inserted->getId();
                     if ($inserted->getCustomPrice() > 0) {
                         //comprobamos si el iva esta incluido en los precios
@@ -289,6 +305,31 @@ class Sales implements SalesInterface
                     $data['items'][$k]['discount'] = $inserted->getDiscountAmount();
                 }
             }
+            if (!$found) {
+                //se ha añadido un producto nuevo, por ej, un regalo
+                $new_item = [];
+
+                $new_item['quote_item_id'] = $inserted->getId();
+                $new_item['sku'] = $inserted->getSku();
+                $new_item['name'] = $inserted->getName();
+                $new_item['gift']=1;
+                $new_item['item_id']=uniqid();
+                $new_item['custom_price'] = 0;
+                $new_item['price'] = $inserted->getPriceInclTax();
+                $new_item['price_without_tax'] = $inserted->getPrice();
+                $new_item['row_total'] = $inserted->getRowTotalInclTax();
+                $new_item['row_total_without_tax'] = $inserted->getRowTotal();
+                $new_item['tax'] = $inserted->getTaxAmount();
+                $new_item['tax_percent'] = $inserted->getTaxPercent();
+                $new_item['qty'] = $inserted->getQty();
+                $new_item['type'] = $inserted->getProductType();
+                $new_item['id'] = $inserted->getProduct()->getId();
+                $new_item['stock'] = 9999;
+                $new_item['extra_stocks'] = [];
+                //hay que ver si tenemos que añadir o quitar el iva al descuento
+                $new_item['discount'] = $inserted->getDiscountAmount();
+                $data['items'][] = $new_item;
+            }
         }
         $data['id'] = $quote->getId();
         $data['discount_amount'] = abs($quote->getShippingAddress()->getDiscountAmount());
@@ -313,7 +354,7 @@ class Sales implements SalesInterface
             if(!in_array($payment->getCode(), $payments)) continue;
             $data['payment_methods'][]=['code'=>$payment->getCode(),'label'=>$payment->getTitle()];
         }
-
+        $this->eventManager->dispatch('gsoft_webpos_before_return_quote', ['quote' => &$data]);
         return [$data];
     }
 
@@ -349,6 +390,7 @@ class Sales implements SalesInterface
         try {
             $ruleId = $this->couponModel->loadByCode($couponCode)->getRuleId();
             $rule = $this->ruleRepository->getById($ruleId);
+            if($rule->getDescription()!="giftcard") return;
             $rule->setDiscountAmount($remainDiscount);
             $rule->setUsesPerCoupon($rule->getUsesPerCoupon()+1);
             $rule->setUsesPerCustomer($rule->getUsesPerCustomer()+1);

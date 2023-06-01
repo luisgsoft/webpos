@@ -210,11 +210,16 @@ class Catalog implements CatalogInterface
     private function getQty($sku, $sourceItem, $lowStock){
         if($sourceItem->getStatus()!="1") $quantity=0;
         else {
+
             $quantity = $sourceItem->getQuantity();
             $quantity -= $lowStock;
             $quantity += $this->getReservedQty($sku, $sourceItem->getSourceCode());
         }
         return $quantity;
+    }
+    private function getStatus($sourceItem){
+        if($this->scopeConfig->getValue("cataloginventory/item_options/manage_stock")=="0") return 1;
+        return $sourceItem->getStatus();
     }
     private function getReservedQty($sku, $source_code)
     {
@@ -222,7 +227,7 @@ class Catalog implements CatalogInterface
         /**@var \Magento\Inventory\Model\Source $source*/
         //pendiente de asociar el id de almacen
 
-        return $this->getReservationsQuantity->execute($sku, 1);
+        return $this->getReservationsQuantity->execute($sku, $this->scopeConfig->getValue("webpos/general/stock_item"));
 
     }
 
@@ -266,13 +271,13 @@ class Catalog implements CatalogInterface
 
                 $source = $this->stockSourceFactory->create();
                 $source->setQty($quantity);
-                $source->setStatus($sourceItem->getStatus());
+                $source->setStatus($this->getStatus($sourceItem));
                 $source->setSourceCode($sourceItem->getSourceCode());
                 $source->setSourceId($sourceItem->getSourceItemId());
                 $sources[]=$source;
                 if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock")) {
                     $stock->setQty($quantity);
-                    $stock->setStatus($sourceItem->getStatus());
+                    $stock->setStatus($this->getStatus($sourceItem));
                 }
             }
             $stock->setSources($sources);

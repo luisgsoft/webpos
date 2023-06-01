@@ -27,7 +27,7 @@ interface SalesInterface
     /**
      * Get discount coupon
      *
-     * @param mixed $quote
+     * @param mixed $coupon_code
      * @return mixed
      */
     public function getInfoCoupon($coupon_code);

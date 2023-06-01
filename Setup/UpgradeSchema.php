@@ -16,31 +16,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $installer = $setup;
 
         $installer->startSetup();
-        if (version_compare($context->getVersion(), '1.0.13', '<')) {
-            $connection = $installer->getConnection();
-			 $connection->query("ALTER TABLE `webpos_stock_reservation` CHANGE `shipped` `shipped` INT(10) NOT NULL;");
-        }
-        if (version_compare($context->getVersion(), '1.0.12', '<')) {
-            $connection = $installer->getConnection();
-
-            $connection->addColumn(
-                $installer->getTable('sales_order_grid'),
-                'webpos_user',
-                [
-                    'type' => Table::TYPE_TEXT,
-                    'comment' => 'Webpos Seller'
-                ]
-            );
-            $connection->addColumn(
-                $installer->getTable('sales_order_grid'),
-                'webpos_terminal',
-                [
-                    'type' => Table::TYPE_TEXT,
-                    'comment' => 'Webpos Terminal'
-                ]
-            );
-
-        }
+        
 
         if (version_compare($context->getVersion(), '1.0.3', '<')) {
 
@@ -158,7 +134,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
               ADD KEY `order_id` (`order_id`),
               ADD KEY `item_id` (`item_id`);');
             $connection->query('ALTER TABLE `webpos_stock_reservation`  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;');
-            $connection->query('ALTER TABLE `webpos_stock_reservation`  ADD CONSTRAINT `webpos_stock_reservation_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `sales_order` (`entity_id`),  ADD CONSTRAINT `webpos_stock_reservation_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `sales_order_item` (`item_id`);');
+            $connection->query('ALTER TABLE `webpos_stock_reservation`  ADD CONSTRAINT `webpos_stock_reservation_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `sales_order` (`entity_id`) ON DELETE CASCADE ON UPDATE CASCADE,  ADD CONSTRAINT `webpos_stock_reservation_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `sales_order_item` (`item_id`) ON DELETE CASCADE ON UPDATE CASCADE;');
         }
         if (version_compare($context->getVersion(), '1.0.10', '<')) {
 
@@ -199,6 +175,42 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'nullable' => true,
 
             ]);
+
+
+        }
+		 if (version_compare($context->getVersion(), '1.0.12', '<')) {
+            $connection = $installer->getConnection();
+
+            $connection->addColumn(
+                $installer->getTable('sales_order_grid'),
+                'webpos_user',
+                [
+                    'type' => Table::TYPE_TEXT,
+                    'comment' => 'Webpos Seller'
+                ]
+            );
+            $connection->addColumn(
+                $installer->getTable('sales_order_grid'),
+                'webpos_terminal',
+                [
+                    'type' => Table::TYPE_TEXT,
+                    'comment' => 'Webpos Terminal'
+                ]
+            );
+
+        }
+		if (version_compare($context->getVersion(), '1.0.13', '<')) {
+            $connection = $installer->getConnection();
+			 $connection->query("ALTER TABLE `webpos_stock_reservation` CHANGE `shipped` `shipped` INT(10) NOT NULL;");
+        }
+       
+        if (version_compare($context->getVersion(), '1.0.14', '<')) {
+
+            $connection = $installer->getConnection();
+            $connection->query("ALTER TABLE `webpos_stock_reservation` DROP FOREIGN KEY `webpos_stock_reservation_ibfk_1`;");
+            $connection->query("ALTER TABLE `webpos_stock_reservation` ADD CONSTRAINT `webpos_stock_reservation_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `sales_order`(`entity_id`) ON DELETE CASCADE ON UPDATE CASCADE;");
+            $connection->query("ALTER TABLE `webpos_stock_reservation` DROP FOREIGN KEY `webpos_stock_reservation_ibfk_2`;");
+            $connection->query("ALTER TABLE `webpos_stock_reservation` ADD CONSTRAINT `webpos_stock_reservation_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `sales_order_item`(`item_id`) ON DELETE CASCADE ON UPDATE CASCADE;");
 
 
         }
