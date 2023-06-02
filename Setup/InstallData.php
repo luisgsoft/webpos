@@ -38,20 +38,20 @@ class InstallData implements InstallDataInterface
     {
         if (!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
         $output = ['error' => 0];
-        $path = $this->directoryList->getPath('var') . DS . "package.zip";
+
         try {
-            $path_extract = $this->directoryList->getPath('app') . DS . 'code' . DS . 'Gsoft' . DS;
+            $path_extract = $this->directoryList->getPath('vendor') . DS . 'code' . DS . 'gsoft' . DS;
             if ($this->isVersionGreatherOrEqual("2.3")) {
-                $this->removeDir($path_extract . DS . "Webpos" . DS . "Version" . DS . "V2");
+                $this->removeDir($path_extract . DS . "module-webpos" . DS . "Version" . DS . "V2");
             } else {
-                $this->removeDir($path_extract . DS . "Webpos" . DS . "Version" . DS . "V3");
+                $this->removeDir($path_extract . DS . "module-webpos" . DS . "Version" . DS . "V3");
             }
 
         } catch (\Exception $e) {
             $output['error'] = 1;
             $output['msg'] = $e->getMessage();
         }
-     
+
     }
 
     private function removeDir($dir)
