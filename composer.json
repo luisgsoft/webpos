@@ -1,6 +1,6 @@
 {
     "name": "gsoft/module-webpos",
-    "description": "",
+    "description": "Magento 2 webpos module for GSOFT POS solution",
     "license": "proprietary",
     "authors": [
         {
@@ -8,7 +8,20 @@
             "email": "luis@gsoft.es"
         }
     ],
+	"version": "1.0.14",
     "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": [
+        "MIT"
+    ],
+	"authors": [
+        {
+            "name": "Gsoft team",
+            "email": "luis@gsoft.es",
+            "homepage": "https://www.gsoft.es",
+            "role": "Leader"
+        }
+    ],
     "require": {},
     "autoload": {
         "files": [
