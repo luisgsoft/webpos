@@ -27,8 +27,10 @@
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
             </webpos>
         </carriers>
-        <general>
-            <webpos>
+        <webpos>
+            <general>
+                <shipping_default>webpos_webpos</shipping_default>
+                <adminpayments>webposcash,webposcard</adminpayments>
                 <source_stock>default</source_stock>
                 <payment_description>Pagado en tienda</payment_description>
                 <send_email>0</send_email>
@@ -37,8 +39,8 @@
                 <order_status>complete</order_status>
                 <is_in_stock>0</is_in_stock>
                 <stock_item>1</stock_item>
-              <!--  <update_url>https://magentowebpos.estamosenbeta.com/pub/media/Webpos.zip</update_url>-->
-            </webpos>
-        </general>
+                <disallow_tracking>1</disallow_tracking>
+            </general>
+        </webpos>
     </default>
 </config>

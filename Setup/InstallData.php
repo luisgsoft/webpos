@@ -17,16 +17,19 @@ class InstallData implements InstallDataInterface
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\App\Filesystem\DirectoryList    $directoryList,
-        \Magento\Framework\App\ProductMetadataInterface $productMetadata)
+        \Magento\Framework\App\ProductMetadataInterface    $productMetadata)
     {
         $this->scopeConfig = $scopeConfig;
         $this->directoryList = $directoryList;
         $this->productMetadata = $productMetadata;
     }
-    protected function isVersionGreatherOrEqual($version){
+
+    protected function isVersionGreatherOrEqual($version)
+    {
         if (version_compare($this->productMetadata->getVersion(), $version, ">=")) return true;
         else return false;
     }
+
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         $setup->startSetup();
@@ -40,11 +43,11 @@ class InstallData implements InstallDataInterface
         $output = ['error' => 0];
 
         try {
-            $path_extract = $this->directoryList->getPath('vendor') . DS . 'code' . DS . 'gsoft' . DS;
+            $path_extract = $this->directoryList->getPath('vendor') . DS . 'gsoft' . DS . 'module-webpos';
             if ($this->isVersionGreatherOrEqual("2.3")) {
-                $this->removeDir($path_extract . DS . "module-webpos" . DS . "Version" . DS . "V2");
+                $this->removeDir($path_extract . DS . "Version" . DS . "V2");
             } else {
-                $this->removeDir($path_extract . DS . "module-webpos" . DS . "Version" . DS . "V3");
+                $this->removeDir($path_extract . DS . "Version" . DS . "V3");
             }
 
         } catch (\Exception $e) {
@@ -56,7 +59,7 @@ class InstallData implements InstallDataInterface
 
     private function removeDir($dir)
     {
-        if(!file_exists($dir)) return;
+        if (!file_exists($dir)) return;
         $it = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new \RecursiveIteratorIterator($it,
             \RecursiveIteratorIterator::CHILD_FIRST);
