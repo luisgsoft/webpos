@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="webpos_stock_reservation" resource="default" engine="innodb" comment="gsoft_webpos_reservation Table">
+        <column xsi:type="int" name="id" padding="11" unsigned="true" nullable="false" identity="true" comment="Entity Id"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <column name="order_id" nullable="false" xsi:type="int" comment="order_id" identity="false" unsigned="true"/>
+        <index referenceId="GSOFT_WEBPOS_RESERVATION_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <column name="item_id" nullable="false" xsi:type="int" comment="item_id" identity="false" unsigned="true"/>
+        <index referenceId="GSOFT_WEBPOS_RESERVATION_ITEM_ID" indexType="btree">
+            <column name="item_id"/>
+        </index>
+        <column name="sku" nullable="false" xsi:type="varchar" comment="sku" length="255"/>
+        <column name="qty" nullable="false" xsi:type="int" comment="qty" identity="false" padding="11"/>
+        <column name="source" nullable="false" xsi:type="varchar" comment="source" length="255"/>
+        <column name="created_at" nullable="false" xsi:type="datetime" comment="created_at"/>
+        <column name="updated_at" nullable="false" xsi:type="datetime" comment="updated_at"/>
+        <column name="accepted" nullable="false" xsi:type="smallint" comment="accepted" identity="false" padding="4"/>
+        <column name="accepted_user" nullable="true" xsi:type="varchar" comment="accepted_user" length="255"/>
+        <column name="accepted_at" nullable="false" xsi:type="datetime" comment="accepted_at"/>
+        <column name="canceled" nullable="false" xsi:type="boolean" comment="canceled"/>
+        <column name="shipped" nullable="false" xsi:type="int" comment="shipped" identity="false" padding="10"/>
+        <constraint xsi:type="foreign" referenceId="webpos_stock_reservation_ibfk_1" table="webpos_stock_reservation" column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="webpos_stock_reservation_ibfk_2" table="webpos_stock_reservation" column="item_id" referenceTable="sales_order_item" referenceColumn="item_id" onDelete="CASCADE"/>
+    </table>
+    <table name="sales_order">
+        <column name="webpos_terminal" nullable="true" xsi:type="varchar" comment="webpos_terminal" length="50"/>
+        <column name="webpos_discount_fixed" nullable="true" xsi:type="decimal" comment="webpos_discount_fixed" precision="10" scale="4"/>
+        <column name="webpos_discount_percent" nullable="true" xsi:type="decimal" comment="webpos_discount_percent" precision="10" scale="4"/>
+        <column name="webpos_discount_label" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
+        <column name="webpos_alias" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
+        <column name="webpos_user" nullable="true" xsi:type="varchar" comment="webpos_user" length="255"/>
+    </table>
+    <table name="sales_order_grid">
+        <column name="webpos_terminal" nullable="true" xsi:type="varchar" comment="webpos_terminal" length="50"/>
+        <column name="webpos_user" nullable="true" xsi:type="varchar" comment="webpos_user" length="255"/>
+    </table>
+    <table name="quote">
+        <column name="webpos_terminal" nullable="true" xsi:type="varchar" comment="webpos_terminal" length="50"/>
+        <column name="webpos_discount_fixed" nullable="true" xsi:type="decimal" comment="webpos_discount_fixed" precision="10" scale="4"/>
+        <column name="webpos_discount_percent" nullable="true" xsi:type="decimal" comment="webpos_discount_percent" precision="10" scale="4"/>
+        <column name="webpos_discount_label" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
+        <column name="webpos_alias" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
+        <column name="webpos_user" nullable="true" xsi:type="varchar" comment="webpos_user" length="255"/>
+    </table>
+</schema>
