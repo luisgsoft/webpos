@@ -3,13 +3,15 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
     <preference for="Gsoft\Webpos\Api\CatalogInterface" type="Gsoft\Webpos\Model\Api\Catalog"/>
-    <preference for="Gsoft\Webpos\Api\SalesInterface" type="Gsoft\Webpos\Model\Api\Sales"/>
+    <preference for="Gsoft\Webpos\Api\QuoteInterface" type="Gsoft\Webpos\Model\Api\Quote"/>
+    <preference for="Gsoft\Webpos\Api\OrderInterface" type="Gsoft\Webpos\Model\Api\Order"/>
     <preference for="Gsoft\Webpos\Api\ReservationsInterface" type="Gsoft\Webpos\Model\Api\Reservations"/>
     <preference for="Gsoft\Webpos\Api\ConfigInterface" type="Gsoft\Webpos\Model\Api\Config"/>
-
     <preference for="Gsoft\Webpos\Api\Data\StockInterface" type="Gsoft\Webpos\Model\Api\Data\Stock"/>
     <preference for="Gsoft\Webpos\Api\Data\StocksourceInterface" type="Gsoft\Webpos\Model\Api\Data\Stocksource"/>
-
+    <preference for="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" type="Gsoft\Webpos\Model\OrderPaymentRepository"/>
+    <preference for="Gsoft\Webpos\Api\Data\OrderPaymentInterface" type="Gsoft\Webpos\Model\OrderPayment"/>
+    <preference for="Gsoft\Webpos\Api\Data\OrderPaymentSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
 
     <type name="Magento\Quote\Model\Quote\Payment">
         <plugin name="vendorModuleQuotePayment" type="Gsoft\Webpos\Plugin\QuotePaymentPlugin"/>
@@ -39,7 +41,7 @@
     <type name="Gsoft\Webpos\Logger\Logger">
         <arguments>
             <argument name="name" xsi:type="string">webpos</argument>
-            <argument name="handlers"  xsi:type="array">
+            <argument name="handlers" xsi:type="array">
                 <item name="system" xsi:type="object">Gsoft\Webpos\Logger\Handler</item>
             </argument>
         </arguments>
@@ -57,4 +59,16 @@
     <type name="Magento\Quote\Model\Quote\Item">
         <plugin name="quote_different_lines" type="Gsoft\Webpos\Plugin\Quote\Item"/>
     </type>
+
+    <type name="Gsoft\Webpos\Version\V3\Model\Api\Quote">
+        <arguments>
+            <argument name="logger" xsi:type="object">Gsoft\Webpos\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Gsoft\Webpos\Version\V3\Model\Api\Catalog">
+        <arguments>
+            <argument name="logger" xsi:type="object">Gsoft\Webpos\Logger\Logger</argument>
+        </arguments>
+    </type>
+
 </config>

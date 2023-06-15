@@ -37,7 +37,7 @@ class SaveShipment implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-
+        if (!$this->scopeConfig->getValue("webpos/general/enabled")) return;
         if($this->scopeConfig->getValue("webpos/general/disallow_tracking")) return;
         /* @var \Magento\Sales\Model\Order\Shipment $shipment */
         $shipment = $observer->getEvent()->getData('shipment');
@@ -77,7 +77,7 @@ class SaveShipment implements ObserverInterface
                 }
 
             }
-        }catch(Exception $e){
+        }catch(\Exception $e){
             throw $e;
         }
 

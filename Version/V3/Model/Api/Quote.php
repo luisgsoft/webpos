@@ -2,9 +2,9 @@
 
 namespace Gsoft\Webpos\Version\V3\Model\Api;
 
-use Gsoft\Webpos\Api\SalesInterface;
+use Gsoft\Webpos\Api\QuoteInterface;
 
-class Sales implements SalesInterface
+class Quote implements QuoteInterface
 {
     protected $storeManager;
     protected $product;
@@ -33,6 +33,8 @@ class Sales implements SalesInterface
     protected $taxCalculation;
     protected $paymentMethodRepository;
     protected $eventManager;
+    protected $logger;
+    protected $orderPaymentFactory;
 
 
     public function __construct(
@@ -60,7 +62,9 @@ class Sales implements SalesInterface
         \Magento\Sales\Model\Order\ShipmentRepository $shipmentRepository,
         \Magento\Sales\Model\Order\ShipmentFactory $shipmentFactory,
         \Magento\Tax\Model\Calculation $_taxCalculation,
-        \Magento\Framework\Event\ManagerInterface                    $eventManager
+        \Magento\Framework\Event\ManagerInterface                    $eventManager,
+        \Psr\Log\LoggerInterface $logger,
+        \Gsoft\Webpos\Model\OrderPaymentFactory $orderPaymentFactory
 
 
     )
@@ -92,6 +96,8 @@ class Sales implements SalesInterface
         $this->taxCalculation=$_taxCalculation;
         $this->paymentMethodRepository=$PaymentMethodManagementInterface;
         $this->eventManager=$eventManager;
+        $this->logger = $logger;
+        $this->orderPaymentFactory = $orderPaymentFactory;
     }
 
     protected function getTaxPercent($product){
@@ -123,9 +129,23 @@ class Sales implements SalesInterface
     public function createQuote($data)
     {
 
+
+        $quote=$id=null;
         /**@var \Magento\Quote\Model\Quote $quote */
-        $id = $this->quoteManagement->createEmptyCart();
-        $quote = $this->quoteRepository->getActive($id);
+        if(!empty($data['id'])) {
+            $id=$data['id'];
+            $quote = $this->quoteFactory->create()->load($id);
+            if($quote->getIsActive()) {
+                $quote->removeAllItems();
+            }else{
+                $quote=$id=null;
+            }
+
+        }
+        if(empty($id)){
+            $id = $this->quoteManagement->createEmptyCart();
+            $quote = $this->quoteRepository->getActive($id);
+        }
         // $quote->setCurrency();
         $id_store = $data['store_id'];
         if (empty($id_store)) $id_store = 1;
@@ -146,7 +166,7 @@ class Sales implements SalesInterface
         foreach ($data['items'] as $k => $item) {
             if(!empty($item['gift'])) continue;
             try {
-                // $quoteItems = $quote->getItems();
+
                 if (!empty($item['customized']) && $item['custom_price']==0) $item['custom_price']=0.0001;
                 $_product = $this->productRepository->getById($item['id']);
                 /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
@@ -200,6 +220,8 @@ class Sales implements SalesInterface
 
 
             } catch (\Exception $e) {
+                $this->logger->info($e->getMessage());
+                $this->logger->info($e->getTraceAsString());
                // echo $e->getMessage();
                  /* echo $e->getMessage();
                   print_r($e->getTraceAsString());*/
@@ -364,7 +386,6 @@ class Sales implements SalesInterface
         try {
             $ruleId = $this->couponModel->loadByCode($couponCode)->getRuleId();
             $rule = $this->ruleRepository->getById($ruleId);
-
             return $rule->getDiscountAmount();
         } catch (\Exception $e) {
             return 0;
@@ -509,7 +530,17 @@ class Sales implements SalesInterface
             $data['increment_id'] = $order->getIncrementId();
             $data['id'] = $order->getId();
             if (!empty($spend_coupon)) $this->spendCoupon($spend_coupon);
+
+            foreach($data["payments"] as $orderpayment){
+                $webpospayment=$this->orderPaymentFactory->create();
+                $webpospayment->setData($orderpayment);
+                $webpospayment->setData("order_id",$order->getId());
+                $webpospayment->setData("created_at",$order->getCreatedAt());
+                $webpospayment->save();
+            }
         } catch (\Exception $e) {
+            $this->logger->info($e->getMessage());
+            $this->logger->info($e->getTraceAsString());
             throw $e;
         }
         $errores=[];
@@ -537,6 +568,8 @@ class Sales implements SalesInterface
             }
 
         } catch (\Exception $e) {
+            $this->logger->info($e->getMessage());
+            $this->logger->info($e->getTraceAsString());
             $errores[]=$e->getMessage();
         }
         try {
@@ -557,6 +590,8 @@ class Sales implements SalesInterface
 
 
         } catch (\Exception $e) {
+            $this->logger->info($e->getMessage());
+            $this->logger->info($e->getTraceAsString());
             $errores[]=$e->getMessage();
         }
         $order->setStatus($this->scopeConfig->getValue("webpos/general/order_status"));

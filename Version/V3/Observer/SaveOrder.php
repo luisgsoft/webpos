@@ -48,6 +48,7 @@ class SaveOrder
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
+        if (!$this->scopeConfig->getValue("webpos/general/enabled")) return;
         if($this->scopeConfig->getValue("webpos/general/disallow_tracking")) return;
         $reservations=[];
         /* @var \Magento\Sales\Model\Order $order */

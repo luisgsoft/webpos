@@ -11,7 +11,7 @@ namespace Gsoft\Webpos\Api;
  * Tools interface.
  * @api
  */
-interface SalesInterface
+interface QuoteInterface
 {
 
 

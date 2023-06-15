@@ -2,9 +2,9 @@
 
 namespace Gsoft\Webpos\Model\Api;
 
-use Gsoft\Webpos\Api\SalesInterface;
+use Gsoft\Webpos\Api\QuoteInterface;
 
-class Sales implements SalesInterface
+class Quote implements QuoteInterface
 {
     protected $hlp;
     protected $manager;
@@ -17,9 +17,9 @@ class Sales implements SalesInterface
 
         $this->hlp = $helper;
         if ($this->hlp ->isVersionGreatherOrEqual("2.3")) {
-            $this->manager = $this->hlp->loadObject("\Gsoft\Webpos\Version\V3\Model\Api\Sales");
+            $this->manager = $this->hlp->loadObject("\Gsoft\Webpos\Version\V3\Model\Api\Quote");
         } else {
-            $this->manager = $this->hlp->loadObject("\Gsoft\Webpos\Version\V2\Model\Api\Sales");
+            $this->manager = $this->hlp->loadObject("\Gsoft\Webpos\Version\V2\Model\Api\Quote");
 
         }
 
@@ -46,6 +46,8 @@ class Sales implements SalesInterface
         return $this->manager->prepareQuote($data);
     }
 
-
+    public function refundOrder($data){
+        return $this->manager->refundOrder($data);
+    }
 
 }
