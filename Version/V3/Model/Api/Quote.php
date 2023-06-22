@@ -100,10 +100,10 @@ class Quote implements QuoteInterface
         $this->orderPaymentFactory = $orderPaymentFactory;
     }
 
-    protected function getTaxPercent($product){
+    protected function getTaxPercent($product, $countryCode=null, $customerTaxClassId=null){
         /** @var \Magento\Framework\App\Config\ScopeConfigInterface $config */
-        $countryCode = $this->scopeConfig->getValue("tax/defaults/country");
-        $customerTaxClassId = $this->scopeConfig->getValue('tax/classes/default_customer_tax_class');
+        if(empty($countryCode)) $countryCode = $this->scopeConfig->getValue("tax/defaults/country");
+        if(empty($customerTaxClassId)) $customerTaxClassId = $this->scopeConfig->getValue('tax/classes/default_customer_tax_class');
 
         /** @var \Magento\Catalog\Model\Product $product */
         $productTaxClassId = $product->getData('tax_class_id');
@@ -161,84 +161,19 @@ class Quote implements QuoteInterface
         else $quote->setWebposDiscountFixed(0);
         if(isset($data['discount_name'])) $quote->setWebposDiscountLabel($data['discount_name']);
         else $quote->setWebposDiscountLabel(null);
-
-        if (!empty($data['coupon_code'])) $quote->setCouponCode($data['coupon_code']);
-        foreach ($data['items'] as $k => $item) {
-            if(!empty($item['gift'])) continue;
-            try {
-
-                if (!empty($item['customized']) && $item['custom_price']==0) $item['custom_price']=0.0001;
-                $_product = $this->productRepository->getById($item['id']);
-                /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
-
-                $params = [];
-                $params['product'] = $_product->getId();
-                $params['qty'] = $item['qty'];
-
-                //$_product->setPrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
-                // $_product->setBasePrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
-                $params['custom_option'] = ["webpos_item_id" => $item['item_id']];
-
-               // $params['discount_amount'] = 10;
-                $_product->addCustomOption('webpos_item_id', $item['item_id']);
-                $_product->setData("webpos_item_id", $item['item_id']);
-
-                //iva
-                $rate = $this->getTaxPercent($_product);
-                $item['original_custom_price'] = $item['custom_price'];
-
-                if (!empty($item['customized'])){
-                    if(!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
-                        if ($rate > 0) {
-                            $params['custom_price'] = $item['custom_price'] / (1 + $rate * 0.01);
-                        } else $params['custom_price'] = $item['custom_price'];
-                    }else $params['custom_price'] = $item['custom_price'];
-                }
-
-                if (!empty($item['child_id'])) {
-                    $child = $this->productFactory->create()->load($item['child_id']);
-                    $parent = $this->productFactory->create()->load($item['id']);
-                    $_product = $parent;
-                    $productAttributeOptions = $parent->getTypeInstance(true)->getConfigurableAttributesAsArray($parent);
-                    foreach ($productAttributeOptions as $option) {
-                        $options[$option['attribute_id']] = $child->getData($option['attribute_code']);
-                    }
-                    $params['super_attribute'] = $options;
-
-
-                  /*  foreach ($item['selected_values'] as $att) {
-                        $options[$att['id']] = $att['value'];
-                    }
-                    $params['super_attribute'] = $options;*/
-
-                }
-                $data['items'][$k]['quote_item_id'] = 0;
-
-                $obj = new \Magento\Framework\DataObject();
-                $obj->setData($params);
-               $quote->addProduct($_product, $obj);
-
-
-            } catch (\Exception $e) {
-                $this->logger->info($e->getMessage());
-                $this->logger->info($e->getTraceAsString());
-               // echo $e->getMessage();
-                 /* echo $e->getMessage();
-                  print_r($e->getTraceAsString());*/
-                //$data['items'][$k]['stock'] = 0;
-            }
-        }
         if(empty($data['id_customer']) || !$data['id_customer']>0) {
             $id_guest=$this->scopeConfig->getValue("webpos/general/guest_customer");
             if(!empty($id_guest)) $data['id_customer'] = $id_guest;
         }
+        $tax_class_id=null;
         if(empty($data['id_customer']) || !$data['id_customer']>0) {
             $quote->setCustomerEmail("webpos@mail.to");
             $quote->setCustomerFirstname("Compra en tienda");
             $quote->setCustomerLastname("Terminal " . intval($data['terminal']));
             $quote->setCustomerIsGuest(true);
         }else{
-          //  $customer = $this->customerFactory->create()->load($data['id_customer']);
+            $customerModel = $this->customerFactory->create()->load($data['id_customer']);
+            $tax_class_id=$customerModel->getTaxClassId();
             $Icustomer = $this->customerRepository->getById($data['id_customer']);
             /**@var \Magento\Customer\Model\Customer $customer*/
             $quote->assignCustomer($Icustomer);
@@ -269,6 +204,74 @@ class Quote implements QuoteInterface
             $data['customer_name'] = $customer_name;
 
         }
+        if (!empty($data['coupon_code'])) $quote->setCouponCode($data['coupon_code']);
+        foreach ($data['items'] as $k => $item) {
+            if(!empty($item['gift'])) continue;
+            try {
+
+                if (!empty($item['customized']) && $item['custom_price']==0) $item['custom_price']=0.0001;
+                $_product = $this->productRepository->getById($item['id']);
+                /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
+
+                $params = [];
+                $params['product'] = $_product->getId();
+                $params['qty'] = $item['qty'];
+
+                //$_product->setPrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
+                // $_product->setBasePrice($_product->getPriceInfo()->getPrice("final_price")->getAmount()->getValue());
+                $params['custom_option'] = ["webpos_item_id" => $item['item_id']];
+
+                // $params['discount_amount'] = 10;
+                $_product->addCustomOption('webpos_item_id', $item['item_id']);
+                $_product->setData("webpos_item_id", $item['item_id']);
+
+                //iva
+                $rate = $this->getTaxPercent($_product, $quote->getShippingAddress()->getCountryId(), $tax_class_id);
+
+                $item['original_custom_price'] = $item['custom_price'];
+
+                if (!empty($item['customized'])){
+                    if(!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+                        if ($rate > 0) {
+                            $params['custom_price'] = $item['custom_price'] / (1 + $rate * 0.01);
+                        } else $params['custom_price'] = $item['custom_price'];
+                    }else $params['custom_price'] = $item['custom_price'];
+                }
+
+                if (!empty($item['child_id'])) {
+                    $child = $this->productFactory->create()->load($item['child_id']);
+                    $parent = $this->productFactory->create()->load($item['id']);
+                    $_product = $parent;
+                    $productAttributeOptions = $parent->getTypeInstance(true)->getConfigurableAttributesAsArray($parent);
+                    foreach ($productAttributeOptions as $option) {
+                        $options[$option['attribute_id']] = $child->getData($option['attribute_code']);
+                    }
+                    $params['super_attribute'] = $options;
+
+
+                    /*  foreach ($item['selected_values'] as $att) {
+                          $options[$att['id']] = $att['value'];
+                      }
+                      $params['super_attribute'] = $options;*/
+
+                }
+                $data['items'][$k]['quote_item_id'] = 0;
+
+                $obj = new \Magento\Framework\DataObject();
+                $obj->setData($params);
+                $quote->addProduct($_product, $obj);
+
+
+            } catch (\Exception $e) {
+                $this->logger->info($e->getMessage());
+                $this->logger->info($e->getTraceAsString());
+                // echo $e->getMessage();
+                /* echo $e->getMessage();
+                 print_r($e->getTraceAsString());*/
+                //$data['items'][$k]['stock'] = 0;
+            }
+        }
+
 
         $shipping_method=$this->scopeConfig->getValue("webpos/general/shipping_default");
         $shippingAddress = $quote->getShippingAddress();
@@ -493,30 +496,30 @@ class Quote implements QuoteInterface
             $quote/*->setCouponCode('')*/->collectTotals();
 
             $remain_coupon_amount=0;
-           if($total_coupons > 0) {
-               $discountAmount=0;
-               foreach($quote->getAllVisibleItems() as $item){
-                   $discountAmount += ($item->getDiscountAmount() ? $item->getDiscountAmount() : 0);
-               }
+            if($total_coupons > 0) {
+                $discountAmount=0;
+                foreach($quote->getAllVisibleItems() as $item){
+                    $discountAmount += ($item->getDiscountAmount() ? $item->getDiscountAmount() : 0);
+                }
 
-              if($total_coupons > $discountAmount) {
-                  if (!empty($data['payments'])) {
-                      foreach ($data['payments'] as $k => $paymentItem) {
-                          if ($paymentItem['code'] == "webposcoupon") {
-                              $paymentItem['delivered']=$discountAmount;
-                              $data['payments'][$k]=$paymentItem;
+                if($total_coupons > $discountAmount) {
+                    if (!empty($data['payments'])) {
+                        foreach ($data['payments'] as $k => $paymentItem) {
+                            if ($paymentItem['code'] == "webposcoupon") {
+                                $paymentItem['delivered']=$discountAmount;
+                                $data['payments'][$k]=$paymentItem;
 
-                              $payment->setAdditionalInformation("webpos", json_encode($data['payments']));
-                              $quote->setPayment($payment);
-                              break;
-                          }
-                      }
-                  }
-                  $remain_coupon_amount = $total_coupons - $discountAmount;
+                                $payment->setAdditionalInformation("webpos", json_encode($data['payments']));
+                                $quote->setPayment($payment);
+                                break;
+                            }
+                        }
+                    }
+                    $remain_coupon_amount = $total_coupons - $discountAmount;
 
 
-              }
-           }
+                }
+            }
             $quote->save();
 
 
@@ -580,8 +583,8 @@ class Quote implements QuoteInterface
                 $invoice->register();
                 $invoice->getOrder()->setCustomerNoteNotify(false);
                 $invoice->getOrder()->setIsInProcess(true);
-             /*   $order->setState("complete");
-                $order->setStatus("complete");*/
+                /*   $order->setState("complete");
+                   $order->setStatus("complete");*/
                 $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description")), false);
                 $transactionSave = $this->transactionFactory->create()->addObject($invoice)->addObject($invoice->getOrder());
                 $transactionSave->save();

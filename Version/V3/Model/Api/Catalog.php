@@ -192,6 +192,7 @@ class Catalog implements CatalogInterface
 
     }
     private function getQty($sku, $sourceItem, $lowStock){
+        if($this->scopeConfig->getValue("cataloginventory/item_options/manage_stock")=="0") return 99999;
         if($sourceItem->getStatus()!="1") $quantity=0;
         else {
             $quantity = $sourceItem->getQuantity();
