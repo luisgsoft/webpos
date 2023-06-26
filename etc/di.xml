@@ -70,5 +70,8 @@
             <argument name="logger" xsi:type="object">Gsoft\Webpos\Logger\Logger</argument>
         </arguments>
     </type>
-
+    <type name="Magento\SalesRule\Model\Rule\Condition\Combine">
+        <plugin name="webposrules"
+                type="Gsoft\Webpos\Plugin\SalesRule\Condition\Iswebpos"/>
+    </type>
 </config>
