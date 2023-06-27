@@ -49,12 +49,12 @@ class CreateCustomer implements DataPatchInterface, PatchRevertableInterface
      * @param ModuleDataSetupInterface $moduleDataSetup
      */
     public function __construct(
-        ModuleDataSetupInterface                           $moduleDataSetup,
-        \Magento\Customer\Model\CustomerFactory            $customerFactory,
-        \Magento\Store\Model\StoreManagerInterface         $storeManager,
-        \Magento\Customer\Api\AddressRepositoryInterface   $addressRepository,
-        \Magento\Customer\Api\Data\AddressInterfaceFactory $addressDataFactory,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        ModuleDataSetupInterface                              $moduleDataSetup,
+        \Magento\Customer\Model\CustomerFactory               $customerFactory,
+        \Magento\Store\Model\StoreManagerInterface            $storeManager,
+        \Magento\Customer\Api\AddressRepositoryInterface      $addressRepository,
+        \Magento\Customer\Api\Data\AddressInterfaceFactory    $addressDataFactory,
+        \Magento\Framework\App\Config\ScopeConfigInterface    $scopeConfig,
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter
     )
     {
@@ -68,7 +68,7 @@ class CreateCustomer implements DataPatchInterface, PatchRevertableInterface
         $this->storeManager = $storeManager;
         $this->addressRepository = $addressRepository;
         $this->addressDataFactory = $addressDataFactory;
-        $this->scopeConfig=$scopeConfig;
+        $this->scopeConfig = $scopeConfig;
         $this->configWriter = $configWriter;
     }
 
@@ -79,72 +79,79 @@ class CreateCustomer implements DataPatchInterface, PatchRevertableInterface
     {
         $this->moduleDataSetup->getConnection()->startSetup();
         $websiteId = 1;// $this->storeManager->getWebsite()->getWebsiteId();
-
-        // Instantiate object (this is the most important part)
-        /**@var \Magento\Customer\Model\Customer $customer */
-        $customer = $this->customerFactory->create();
-
-        //$customer->setWebsiteId($websiteId);
-        $customer->setEmail("webpos@mail.com");
-        $customer->setFirstname("Webpos");
-        $customer->setLastname("Webpos");
-        $customer->setPassword(uniqid());
-        $customer->setTaxvat(".");
-        $customer->setAddresses(null);
-
-
-        $storeId = $this->storeManager->getWebsite($websiteId)->getDefaultStore()->getId();
-        $customer->setStoreId($storeId);
-
-        $storeName = $this->storeManager->getStore($customer->getStoreId())->getName();
-        $customer->setCreatedIn($storeName);
         try {
-            $customer->save();
-            /**@var \Magento\Customer\Model\Address $address */
-            $address = $this->addressDataFactory->create();
+            // Instantiate object (this is the most important part)
 
-            $country = $this->scopeConfig->getValue('general/store_information/country_id', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            if (empty($country)) $country = "ES";
+            $col=$this->customerFactory->create()->getCollection();
+            $customer = $col->addAttributeToFilter("email", "webpos@mail.com")->getFirstItem();
+            if(!empty($customer)){
+                $this->configWriter->save('webpos/general/guest_customer', $customer->getId(), \Magento\Store\Model\ScopeInterface::SCOPE_STORE, 0);
 
-            $regionId = $this->scopeConfig->getValue('general/store_information/region_id', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            if (empty($regionId)) $regionId = "177";
+            }else {
+                /**@var \Magento\Customer\Model\Customer $customer */
+                $customer = $this->customerFactory->create();
 
-            $region = null;
-
-            $city = $this->scopeConfig->getValue('general/store_information/city', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            if (empty($city)) $city = "Valencia";
-
-            $zip = $this->scopeConfig->getValue('general/store_information/postcode', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            if (empty($zip)) $zip = "46000";
-
-            $address->setFirstname("webpos")
-                ->setLastname("webpos")
-                ->setCountryId($country)
-                ->setRegionId($regionId)
-                ->setRegion($region)
-                ->setCity($city)
-                ->setPostcode($zip)
-                ->setCustomerId($customer->getId())
-                ->setStreet(['XXX'])
-                ->setCompany('XX')
-                ->setVatId(".")
-                ->setTelephone("XX");
+                //$customer->setWebsiteId($websiteId);
+                $customer->setEmail("webpos@mail.com");
+                $customer->setFirstname("Webpos");
+                $customer->setLastname("Webpos");
+                $customer->setPassword(uniqid());
+                $customer->setTaxvat(".");
+                $customer->setAddresses(null);
 
 
-            $this->addressRepository->save($address);
+                $storeId = $this->storeManager->getWebsite($websiteId)->getDefaultStore()->getId();
+                $customer->setStoreId($storeId);
 
-            $customer->setDefaultBilling($address->getId())->setDefaultShipping($address->getId())->save();
+                $storeName = $this->storeManager->getStore($customer->getStoreId())->getName();
+                $customer->setCreatedIn($storeName);
 
-            $this->configWriter->save('webpos/general/guest_customer', $customer->getId(), \Magento\Store\Model\ScopeInterface::SCOPE_STORE, 0);
+                $customer->save();
+                /**@var \Magento\Customer\Model\Address $address */
+                $address = $this->addressDataFactory->create();
 
+                $country = $this->scopeConfig->getValue('general/store_information/country_id', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                if (empty($country)) $country = "ES";
+
+                $regionId = $this->scopeConfig->getValue('general/store_information/region_id', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                if (empty($regionId)) $regionId = "177";
+
+                $region = null;
+
+                $city = $this->scopeConfig->getValue('general/store_information/city', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                if (empty($city)) $city = "Valencia";
+
+                $zip = $this->scopeConfig->getValue('general/store_information/postcode', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                if (empty($zip)) $zip = "46000";
+
+                $address->setFirstname("webpos")
+                    ->setLastname("webpos")
+                    ->setCountryId($country)
+                    ->setRegionId($regionId)
+                    ->setRegion($region)
+                    ->setCity($city)
+                    ->setPostcode($zip)
+                    ->setCustomerId($customer->getId())
+                    ->setStreet(['XXX'])
+                    ->setCompany('XX')
+                    ->setVatId(".")
+                    ->setTelephone("XX");
+
+
+                $this->addressRepository->save($address);
+
+                $customer->setDefaultBilling($address->getId())->setDefaultShipping($address->getId())->save();
+
+                $this->configWriter->save('webpos/general/guest_customer', $customer->getId(), \Magento\Store\Model\ScopeInterface::SCOPE_STORE, 0);
+            }
             /**@todo
              * No guarda los datos al crear el customer. tambien habría que guardar el metodo de envio
              **/
 
         } catch (\Exception $e) {
 
-            echo $e->getMessage();
-            echo $e->getTraceAsString();
+            //echo $e->getMessage();
+            // echo $e->getTraceAsString();
         }
 
         $this->moduleDataSetup->getConnection()->endSetup();
