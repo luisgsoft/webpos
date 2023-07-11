@@ -599,6 +599,15 @@ class Quote implements QuoteInterface
         }
         $order->setStatus($this->scopeConfig->getValue("webpos/general/order_status"));
         $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description")), false);
+
+        try {
+            if($this->scopeConfig->getValue("webpos/general/enabled_ga",\Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+                $this->ga4SendData($order);
+            }
+        } catch (\Exception $e) {
+            $errores[] = $e->getMessage();
+        }
+
         $data['errors']=$errores;
 
         return [$data];
@@ -619,6 +628,88 @@ class Quote implements QuoteInterface
         $address->setCountryId($data->getCountryId());
         return $address;
     }
+    public function ga4SendData($order)
+    {
 
+        $test = true;
+        $gid = $this->scopeConfig->getValue("webpos/general/ga_gid",\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $secret = $this->scopeConfig->getValue("webpos/general/ga_secret",\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $url = 'https://www.google-analytics.com/mp/collect?measurement_id=' . $gid . '&api_secret=' . $secret;
+
+        /**@var \Magento\Sales\Model\Order $order */
+        $items = [];
+        if (!empty($order->getAllVisibleitems())) {
+            foreach ($order->getAllVisibleItems() as $item) {
+                $items[] = [
+                    'item_id' => $item->getSku(),
+                    'quantity' => intval($item->getQtyOrdered()),
+                    'price' => $item->getPrice(),
+                    'item_name' => "patata",//$item->getname(),
+                    // Otros atributos del producto, si los hay
+                ];
+            }
+        }
+        $ref = $order->getIncrementId();
+        if ($test) $ref .="----". uniqid();
+        $data = [
+            'client_id' => $this->getCID(),
+            'events' => [
+                [
+                    'name' => 'purchase',
+                    'params' => [
+                        'engagement_time_msec' => "100",
+                        'session_id' => uniqid(),
+                        'transaction_id' => $ref,
+                        'value' => $order->getGrandTotal(),
+                        'currency' => $order->getOrderCurrencyCode(),
+                        'tax' => $order->getTaxAmount(),
+                        'shipping' => $order->getShippingAmount(),
+                        'items' => $items
+                    ],
+                ],
+            ]
+        ];
+
+
+        $data = json_encode($data);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_VERBOSE, true);
+        curl_setopt($ch, CURLOPT_STDERR, fopen('php://output', 'w'));
+        curl_setopt( $ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 		1);
+        //curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 			1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type:application/json']);
+        //curl_setopt($ch, CURLOPT_USERAGENT,		'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $response = null;
+
+        try {
+            $response = curl_exec($ch);
+            curl_close($ch);
+            if ($test) {
+                echo $data;
+                echo $response;
+                print_r(curl_getinfo($ch));
+            }
+
+
+        } catch (\Exception $e) {
+            curl_close($ch);
+        }
+
+
+
+
+        return $response;
+    }
+
+    private function getCID(): string
+    {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+    }
 
 }

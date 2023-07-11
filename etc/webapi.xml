@@ -62,4 +62,64 @@
         </resources>
     </route>
 
+    <route url="/V1/gsoft/Webpos/orderpayment" method="POST">
+        <service class="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::OrderPayment_save"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/orderpayment/search" method="GET">
+        <service class="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::OrderPayment_view"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/orderpayment/:orderpaymentId" method="GET">
+        <service class="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" method="get"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::OrderPayment_view"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/orderpayment/:orderpaymentId" method="PUT">
+        <service class="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::OrderPayment_update"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/orderpayment/:orderpaymentId" method="DELETE">
+        <service class="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::OrderPayment_delete"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/hold/search" method="GET">
+        <service class="Gsoft\Webpos\Api\HoldRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::Hold_view"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/hold/:holdId" method="GET">
+        <service class="Gsoft\Webpos\Api\HoldRepositoryInterface" method="get"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::Hold_view"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/hold/:holdId" method="PUT">
+        <service class="Gsoft\Webpos\Api\HoldRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::Hold_update"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/hold/:holdId" method="DELETE">
+        <service class="Gsoft\Webpos\Api\HoldRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::Hold_delete"/>
+        </resources>
+    </route>
+    <route url="/V1/gsoft/Webpos/hold" method="POST">
+        <service class="Gsoft\Webpos\Api\HoldRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Gsoft_Webpos::Hold_update"/>
+        </resources>
+    </route>
 </routes>

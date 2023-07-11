@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+	<acl>
+		<resources>
+			<resource id="Magento_Backend::admin">
+				<resource id="Gsoft_Webpos::OrderPayment" title="OrderPayment" sortOrder="10">
+					<resource id="Gsoft_Webpos::OrderPayment_save" title="Save OrderPayment" sortOrder="10"/>
+					<resource id="Gsoft_Webpos::OrderPayment_delete" title="Delete OrderPayment" sortOrder="20"/>
+					<resource id="Gsoft_Webpos::OrderPayment_update" title="Update OrderPayment" sortOrder="30"/>
+					<resource id="Gsoft_Webpos::OrderPayment_view" title="View OrderPayment" sortOrder="40"/>
+				</resource>
+				<resource id="Gsoft_Webpos::Hold" title="Hold" sortOrder="10">
+					<resource id="Gsoft_Webpos::Hold_save" title="Save Hold" sortOrder="10"/>
+					<resource id="Gsoft_Webpos::Hold_delete" title="Delete Hold" sortOrder="20"/>
+					<resource id="Gsoft_Webpos::Hold_update" title="Update Hold" sortOrder="30"/>
+					<resource id="Gsoft_Webpos::Hold_view" title="View Hold" sortOrder="40"/>
+				</resource>
+			</resource>
+		</resources>
+	</acl>
+</config>

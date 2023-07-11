@@ -61,5 +61,18 @@
         <column name="creditmemo_id" nullable="true" xsi:type="int" comment="creditmemo_id" identity="false"/>
         <constraint xsi:type="foreign" referenceId="webpos_order_payment_ibfk_2" table="webpos_order_payment" column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
     </table>
+    <table name="gsoft_webpos_hold" resource="default" engine="innodb" comment="gsoft_webpos_hold Table">
+        <column xsi:type="int" name="hold_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity Id"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="hold_id"/>
+        </constraint>
+        <column name="cart" nullable="false" xsi:type="text" comment="cart"/>
+        <column name="name" nullable="false" xsi:type="varchar" comment="name" length="255"/>
+        <column name="created_at" nullable="true" xsi:type="datetime" comment="created_at" default="CURRENT_TIMESTAMP" on_update="false"/>
+        <column name="terminal" nullable="false" xsi:type="varchar" comment="terminal" length="255"/>
+        <column name="user" nullable="false" xsi:type="varchar" comment="user" length="255"/>
+        <column name="payed" nullable="true" xsi:type="decimal" comment="payed" scale="4" precision="12"/>
+        <column name="store_id" nullable="false" xsi:type="int" comment="store_id" padding="10" unsigned="true"/>
+    </table>
 
 </schema>

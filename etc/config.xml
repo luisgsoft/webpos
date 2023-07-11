@@ -29,6 +29,7 @@
         </carriers>
         <webpos>
             <general>
+                <enabled_hold>0</enabled_hold>
                 <shipping_default>webpos_webpos</shipping_default>
                 <adminpayments>webposcash,webposcard</adminpayments>
                 <source_stock>default</source_stock>

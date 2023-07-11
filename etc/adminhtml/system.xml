@@ -17,6 +17,10 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Show store in webpos</comment>
                 </field>
+                <field id="enabled_hold" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="0" translate="label" type="select">
+                    <label>Mostrar carritos guardados</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <label>General Configuration</label>
                 <field id="shipping_default" translate="label" type="select" sortOrder="1" showInDefault="1"
                        showInWebsite="1" showInStore="0">
@@ -69,6 +73,17 @@
                     <label>Desactivar reservations</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>No guardar registro de pedidos online para avisar al webpos</comment>
+                </field>
+                <field id="enabled_ga" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="label" type="select">
+                    <label>GA4 enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Send order from webpos to Google Analytics</comment>
+                </field>
+                <field id="ga_gid" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>GID GA4</label>
+                </field>
+                <field id="ga_secret" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Measurement GA4</label>
                 </field>
             </group>
         </section>

@@ -74,4 +74,27 @@
         <plugin name="webposrules"
                 type="Gsoft\Webpos\Plugin\SalesRule\Condition\Iswebpos"/>
     </type>
+
+    <preference for="Gsoft\Webpos\Api\ReservationRepositoryInterface" type="Gsoft\Webpos\Model\ReservationRepository"/>
+    <preference for="Gsoft\Webpos\Api\Data\ReservationInterface" type="Gsoft\Webpos\Model\Reservation"/>
+    <preference for="Gsoft\Webpos\Api\Data\ReservationSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Gsoft\Webpos\Api\OrderPaymentRepositoryInterface" type="Gsoft\Webpos\Model\OrderPaymentRepository"/>
+    <preference for="Gsoft\Webpos\Api\Data\OrderPaymentInterface" type="Gsoft\Webpos\Model\OrderPayment"/>
+    <preference for="Gsoft\Webpos\Api\Data\OrderPaymentSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Gsoft\Webpos\Api\HoldRepositoryInterface" type="Gsoft\Webpos\Model\HoldRepository"/>
+    <preference for="Gsoft\Webpos\Api\Data\HoldInterface" type="Gsoft\Webpos\Model\Hold"/>
+    <preference for="Gsoft\Webpos\Api\Data\HoldSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <virtualType name="Gsoft\Webpos\Model\ResourceModel\Hold\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">gsoft_webpos_hold</argument>
+            <argument name="resourceModel" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Hold\Collection</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="gsoft_webpos_hold_listing_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Hold\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
