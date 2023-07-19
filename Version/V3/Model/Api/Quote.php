@@ -230,7 +230,7 @@ class Quote implements QuoteInterface
                 //iva
                 $rate = $this->getTaxPercent($_product, $quote->getShippingAddress()->getCountryId(), $tax_class_id);
 
-                $item['original_custom_price'] = $item['custom_price'];
+                $item['original_custom_price'] = $item['custom_price']??null;
 
                 if (!empty($item['customized'])) {
                     if (!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
@@ -528,7 +528,7 @@ class Quote implements QuoteInterface
 
 
             $order = $this->quoteManagement->submit($quote);
-
+            if(empty($order)) throw new \Exception("Hubo un error al crear el pedido");
             if ($remain_coupon_amount > 0) {
                 $this->updateCouponAmount($data['coupon_code'], $remain_coupon_amount);
 
