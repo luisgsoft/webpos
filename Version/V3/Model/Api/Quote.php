@@ -138,12 +138,12 @@ class Quote implements QuoteInterface
             $id = $data['id'];
             $quote = $this->quoteFactory->create()->load($id);
             if ($quote->getIsActive()) {
-                $quote->removeAllItems();
-            } else {
-                $quote = $id = null;
+                $quote->delete();
             }
+            $quote = $id = null;
 
         }
+
         if (empty($id)) {
             $id = $this->quoteManagement->createEmptyCart();
             $quote = $this->quoteRepository->getActive($id);
