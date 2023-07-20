@@ -5,11 +5,11 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
-        <column name="order_id" nullable="false" xsi:type="int" comment="order_id" identity="false" unsigned="true"/>
+        <column name="order_id" nullable="false" xsi:type="int" comment="order_id" identity="false" unsigned="true" padding="10"/>
         <index referenceId="GSOFT_WEBPOS_RESERVATION_ORDER_ID" indexType="btree">
             <column name="order_id"/>
         </index>
-        <column name="item_id" nullable="false" xsi:type="int" comment="item_id" identity="false" unsigned="true"/>
+        <column name="item_id" nullable="false" xsi:type="int" comment="item_id" identity="false" unsigned="true" padding="10"/>
         <index referenceId="GSOFT_WEBPOS_RESERVATION_ITEM_ID" indexType="btree">
             <column name="item_id"/>
         </index>
@@ -51,7 +51,7 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="orderpayment_id"/>
         </constraint>
-        <column name="order_id" nullable="true" xsi:type="int" comment="order_id" identity="false" unsigned="true"/>
+        <column name="order_id" nullable="true" xsi:type="int" comment="order_id" identity="false" unsigned="true" padding="10"/>
         <column name="created_at" nullable="false" xsi:type="datetime" comment="created_at"/>
         <column name="code" nullable="true" xsi:type="text" comment="code"/>
         <column name="label" nullable="true" xsi:type="text" comment="label"/>
