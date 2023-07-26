@@ -13,6 +13,7 @@
         <attribute code="webpos_discount_label" type="string" />
         <attribute code="webpos_alias" type="string" />
         <attribute code="webpos_user" type="string" />
+        <attribute code="webpos_installments" type="float" />
     </extension_attributes>
     <extension_attributes for="Magento\Sales\Api\Data\OrderInterface">
         <attribute code="webpos_terminal" type="string" />
@@ -21,6 +22,7 @@
         <attribute code="webpos_discount_label" type="string" />
         <attribute code="webpos_alias" type="string" />
         <attribute code="webpos_user" type="string" />
+        <attribute code="webpos_installments" type="float" />
     </extension_attributes>
     <extension_attributes for="Magento\Sales\Api\Data\CreditmemoInterface">
         <attribute code="webpos_payment" type="string" />

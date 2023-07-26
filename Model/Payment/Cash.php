@@ -14,6 +14,8 @@ class Cash extends \Magento\Payment\Model\Method\AbstractMethod
      * @var string
      */
     protected $_code = 'webposcash';
+    protected $_infoBlockType = \Magento\Payment\Block\Info\Instructions::class;
+    protected $_isOffline = true;
 
     public function canUseInternal()
     {

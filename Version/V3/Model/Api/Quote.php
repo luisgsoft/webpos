@@ -441,6 +441,13 @@ class Quote implements QuoteInterface
         $quote = $this->quoteRepository->getActive($data['id']);
         $spend_coupon = null;
         $total_coupons = 0;
+        $has_installments=false;
+        $payed_installment=0;
+
+        $quote->setWebposTerminal($data['terminal']);
+        $quote->setWebposAlias($data['webpos_alias']);
+        $quote->setWebposUser($data['webpos_user']);
+
         try {
             if (!empty($data['coupon_code'])) {
                 $total_coupons = $this->getInfoCoupon($data['coupon_code']);
@@ -478,16 +485,25 @@ class Quote implements QuoteInterface
 
             }
             $payment = $quote->getPayment();
+            $payment_description="";
+
             $payment_code = 'webposcash';
             if (!empty($data['payments'])) {
                 foreach ($data['payments'] as $payment_item) {
-                    $payment_code = $payment_item['code'];
-                    break;
+                    if(empty($payment_code)) $payment_code = $payment_item['code'];
+                    $payment_description.=$payment_item['name']." x ".number_format($payment_item['amount'], 2)."\n";
+                    if($payment_item['code']!="webpos_installment") $payed_installment+=$payment_item['amount'];
+                    else $has_installments=true;
                 }
             }
+            if(!$has_installments) $payed_installment=0;
+            $quote->setData("webpos_installments", $payed_installment);
+
             $payment->setMethod($payment_code);
 
-            $payment->setAdditionalInformation("webpos", json_encode($data['payments']));
+
+            $payment->setAdditionalInformation("webpos", $data['payments']);
+            $payment->setAdditionalInformation("instructions", $payment_description);
             $quote->setPayment($payment);
 
 
@@ -541,9 +557,13 @@ class Quote implements QuoteInterface
             foreach ($data["payments"] as $orderpayment) {
                 $webpospayment = $this->orderPaymentFactory->create();
                 $webpospayment->setData($orderpayment);
+                $webpospayment->setData("terminal", $data["terminal"]);
+                $webpospayment->setData("user", $data["webpos_user"]);
                 $webpospayment->setData("order_id", $order->getId());
+                $webpospayment->setData("increment_id", $order->getIncrementId());
                 $webpospayment->setData("created_at", $order->getCreatedAt());
                 $webpospayment->save();
+
             }
         } catch (\Exception $e) {
             $this->logger->info($e->getMessage());
@@ -552,8 +572,9 @@ class Quote implements QuoteInterface
         }
         $errores = [];
 
+
         try {
-            if ($this->scopeConfig->getValue("webpos/general/create_shipment")) {
+            if ($this->scopeConfig->getValue("webpos/general/create_shipment") && !$has_installments) {
                 // load order from database
                 if ($order->canShip()) {
                     $items = [];
@@ -580,7 +601,7 @@ class Quote implements QuoteInterface
             $errores[] = $e->getMessage();
         }
         try {
-            if ($this->scopeConfig->getValue("webpos/general/create_invoice")) {
+            if ($this->scopeConfig->getValue("webpos/general/create_invoice") && !$has_installments) {
                 //generate invoice
                 $invoice = $this->invoiceService->prepareInvoice($order);
                 $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);

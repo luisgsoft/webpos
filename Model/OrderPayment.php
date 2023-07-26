@@ -164,4 +164,64 @@ class OrderPayment extends AbstractModel implements OrderPaymentInterface
     {
         return $this->setData(self::CREATED_AT, $createdAt);
     }
+    /**
+     * @inheritDoc
+     */
+    public function getReference()
+    {
+        return $this->getData(self::REFERENCE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setReference($reference)
+    {
+        return $this->setData(self::REFERENCE, $reference);
+    }
+    /**
+     * @inheritDoc
+     */
+    public function getTerminal()
+    {
+        return $this->getData(self::TERMINAL);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setTerminal($terminal)
+    {
+        return $this->setData(self::TERMINAL, $terminal);
+    }
+    /**
+     * @inheritDoc
+     */
+    public function getUser()
+    {
+        return $this->getData(self::USER);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setUser($user)
+    {
+        return $this->setData(self::USER, $user);
+    }
+    /**
+     * @inheritDoc
+     */
+    public function getIncrementId()
+    {
+        return $this->getData(self::INCREMENT_ID);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setIncrementId($increment_id)
+    {
+        return $this->setData(self::INCREMENT_ID, $increment_id);
+    }
 }

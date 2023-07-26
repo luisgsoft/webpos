@@ -15,6 +15,14 @@
                 <title>Pago en webpos con tarjeta</title>
                 <order_status>processing</order_status>
             </webposcard>
+            <webpos_installment>
+                <active>0</active>
+                <model>Gsoft\Webpos\Model\Payment\Webpos_installment</model>
+                <order_status>pending</order_status>
+                <title>Pago aplazado</title>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+            </webpos_installment>
         </payment>
         <carriers>
             <webpos>

@@ -97,4 +97,11 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="gsoft_webpos_hold_listing_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Hold\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

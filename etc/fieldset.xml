@@ -17,6 +17,9 @@
             <field name="webpos_user">
                 <aspect name="to_order" />
             </field>
+            <field name="webpos_installments">
+                <aspect name="to_order" />
+            </field>
         </fieldset>
     </scope>
 </config>

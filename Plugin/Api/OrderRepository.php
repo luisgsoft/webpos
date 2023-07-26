@@ -41,9 +41,11 @@ class OrderRepository
     public function afterGet(OrderRepositoryInterface $subject, OrderInterface $order)
     {
         $terminal = $order->getData("webpos_terminal");
+        $installments = $order->getData("webpos_installments");
         $extensionAttributes = $order->getExtensionAttributes();
         $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
         $extensionAttributes->setWebposTerminal($terminal);
+        $extensionAttributes->setWebposInstallments($installments);
         $order->setExtensionAttributes($extensionAttributes);
 
         return $order;
@@ -63,9 +65,11 @@ class OrderRepository
 
         foreach ($orders as &$order) {
             $terminal = $order->getData("webpos_terminal");
+            $installments = $order->getData("webpos_installments");
             $extensionAttributes = $order->getExtensionAttributes();
             $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
             $extensionAttributes->setWebposTerminal($terminal);
+            $extensionAttributes->setWebposInstallments($installments);
             $order->setExtensionAttributes($extensionAttributes);
         }
 

@@ -33,10 +33,12 @@
         <column name="webpos_discount_label" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
         <column name="webpos_alias" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
         <column name="webpos_user" nullable="true" xsi:type="varchar" comment="webpos_user" length="255"/>
+        <column name="webpos_installments" nullable="true" xsi:type="decimal" comment="webpos_installments" precision="10" scale="4"/>
     </table>
     <table name="sales_order_grid">
         <column name="webpos_terminal" nullable="true" xsi:type="varchar" comment="webpos_terminal" length="50"/>
         <column name="webpos_user" nullable="true" xsi:type="varchar" comment="webpos_user" length="255"/>
+        <column name="webpos_installments" nullable="true" xsi:type="decimal" comment="webpos_installments" precision="10" scale="4"/>
     </table>
     <table name="quote">
         <column name="webpos_terminal" nullable="true" xsi:type="varchar" comment="webpos_terminal" length="50"/>
@@ -45,6 +47,7 @@
         <column name="webpos_discount_label" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
         <column name="webpos_alias" nullable="true" xsi:type="varchar" comment="webpos_alias" length="255"/>
         <column name="webpos_user" nullable="true" xsi:type="varchar" comment="webpos_user" length="255"/>
+        <column name="webpos_installments" nullable="true" xsi:type="decimal" comment="webpos_installments" precision="10" scale="4"/>
     </table>
     <table name="webpos_order_payment" resource="default" engine="innodb" comment="gsoft_webpos_order Table">
         <column xsi:type="int" name="orderpayment_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity Id"/>
@@ -53,12 +56,16 @@
         </constraint>
         <column name="order_id" nullable="true" xsi:type="int" comment="order_id" identity="false" unsigned="true" padding="10"/>
         <column name="created_at" nullable="false" xsi:type="datetime" comment="created_at"/>
-        <column name="code" nullable="true" xsi:type="text" comment="code"/>
-        <column name="label" nullable="true" xsi:type="text" comment="label"/>
-        <column name="name" nullable="true" xsi:type="text" comment="name"/>
+        <column name="code" nullable="true" xsi:type="varchar" comment="code" length="255"/>
+        <column name="reference" nullable="true" xsi:type="varchar" comment="reference" length="255"/>
+        <column name="label" nullable="true" xsi:type="varchar" comment="label" length="255"/>
+        <column name="name" nullable="true" xsi:type="varchar" comment="name" length="255"/>
         <column name="delivered" nullable="true" xsi:type="decimal" comment="delivered" scale="4" precision="12"/>
         <column name="amount" nullable="true" xsi:type="decimal" comment="amount" scale="4" precision="12"/>
         <column name="creditmemo_id" nullable="true" xsi:type="int" comment="creditmemo_id" identity="false"/>
+        <column name="terminal" nullable="true" xsi:type="int" comment="terminal" identity="false"/>
+        <column name="user" nullable="true" xsi:type="varchar" comment="user" length="255"/>
+        <column name="increment_id" nullable="true" xsi:type="varchar" comment="increment_id" length="255"/>
         <constraint xsi:type="foreign" referenceId="webpos_order_payment_ibfk_2" table="webpos_order_payment" column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
     </table>
     <table name="gsoft_webpos_hold" resource="default" engine="innodb" comment="gsoft_webpos_hold Table">

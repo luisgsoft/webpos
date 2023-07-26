@@ -122,4 +122,10 @@
             <resource ref="Gsoft_Webpos::Hold_update"/>
         </resources>
     </route>
+    <route url="/V1/gsoft/Webpos/order/pay" method="POST">
+        <service class="Gsoft\Webpos\Api\OrderInterface" method="pay"/>
+        <resources>
+            <resource ref="Magento_Sales::manage"/>
+        </resources>
+    </route>
 </routes>

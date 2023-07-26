@@ -19,7 +19,10 @@ interface OrderPaymentInterface
     const ORDERPAYMENT_ID = 'orderpayment_id';
     const CREATED_AT = 'created_at';
     const LABEL = 'label';
-
+    const REFERENCE = 'reference';
+    const TERMINAL = 'terminal';
+    const USER = 'user';
+    const INCREMENT_ID = 'increment_id';
     /**
      * Get orderpayment_id
      * @return string|null
@@ -136,4 +139,52 @@ interface OrderPaymentInterface
      * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
      */
     public function setCreatedAt($createdAt);
+    /**
+     * Get reference
+     * @return string|null
+     */
+    public function getReference();
+
+    /**
+     * Set name
+     * @param string reference
+     * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
+     */
+    public function setReference($reference);
+    /**
+     * Get terminal
+     * @return string|null
+     */
+    public function getTerminal();
+
+    /**
+     * Set terminal
+     * @param string $terminal
+     * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
+     */
+    public function setTerminal($terminal);
+    /**
+     * Get terminal
+     * @return string|null
+     */
+    public function getUser();
+
+    /**
+     * Set terminal
+     * @param string $user
+     * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
+     */
+    public function setUser($user);
+    /**
+     * Get terminal
+     * @return string|null
+     */
+    public function getIncrementId();
+
+    /**
+     * Set terminal
+     * @param string $increment_id
+     * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
+     */
+    public function setIncrementId($increment_id);
 }

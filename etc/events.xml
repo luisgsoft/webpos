@@ -14,5 +14,7 @@
     <event name="sales_order_shipment_save_after">
         <observer name="webpos_shipment_save_after" instance="Gsoft\Webpos\Observer\SaveShipment" />
     </event>
-
+    <event name="controller_action_predispatch_checkout_index_index">
+        <observer name="gsoft_webpos_observer_checkoutinit" instance="Gsoft\Webpos\Observer\Checkoutinit" />
+    </event>
 </config>

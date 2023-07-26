@@ -1,5 +1,6 @@
 <?php $_order = $block->getOrder();
-
+/**@var \Magento\Framework\Pricing\Helper\Data $helper*/
+$helper=$this->helper("\Magento\Framework\Pricing\Helper\Data");
 if($_order->getData("webpos_user")){
     ?>
     <table class="admin__table-secondary order-information-table">
@@ -12,6 +13,12 @@ if($_order->getData("webpos_user")){
             <th><?php echo __("Webpos Terminal");?></th>
             <td><?php echo $_order->getData("webpos_terminal"); ?></td>
         </tr>
+        <?php if($_order->getData("webpos_installments") > 0){?>
+            <tr>
+                <th><?php echo __("Pagado a cuenta");?></th>
+                <td><?php echo $helper->currency($_order->getData("webpos_installments"), true, false); ?></td>
+            </tr>
+    <?php } ?>
         </tbody></table>
 <?php
 }
