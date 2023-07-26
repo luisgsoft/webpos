@@ -14,6 +14,7 @@ class Order implements OrderInterface
     protected $scopeConfig;
     protected $invoiceService;
     protected $transactionFactory;
+    protected $logger;
 
     public function __construct(
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -24,6 +25,7 @@ class Order implements OrderInterface
         \Magento\Framework\App\Config\ScopeConfigInterface           $scopeConfig,
         \Magento\Sales\Model\Service\InvoiceService                  $invoiceService,
         \Magento\Framework\DB\TransactionFactory                     $transactionFactory,
+        \Gsoft\Webpos\Logger\Logger $logger
 
     )
     {
@@ -35,6 +37,7 @@ class Order implements OrderInterface
         $this->scopeConfig = $scopeConfig;
         $this->invoiceService=$invoiceService;
         $this->transactionFactory=$transactionFactory;
+        $this->logger=$logger;
     }
 
     /**
