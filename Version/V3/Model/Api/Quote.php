@@ -491,8 +491,9 @@ class Quote implements QuoteInterface
             if (!empty($data['payments'])) {
                 foreach ($data['payments'] as $payment_item) {
                     if(empty($payment_code)) $payment_code = $payment_item['code'];
-                    $payment_description.=$payment_item['name']." x ".number_format($payment_item['amount'], 2)."\n";
-                    if($payment_item['code']!="webpos_installment") $payed_installment+=$payment_item['amount'];
+                    $amount=$payment_item['amount']??$payment_item['delivered'];
+                    $payment_description.=$payment_item['name']." x ".number_format($amount, 2)."\n";
+                    if($payment_item['code']!="webpos_installment") $payed_installment+=$amount;
                     else $has_installments=true;
                 }
             }
