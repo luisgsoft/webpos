@@ -380,7 +380,10 @@ class Quote implements QuoteInterface
         foreach ($this->paymentMethodRepository->getList($quote->getId()) as $payment) {
 
             if (!in_array($payment->getCode(), $payments)) continue;
-            $data['payment_methods'][] = ['code' => $payment->getCode(), 'label' => $payment->getTitle()];
+            $title=$this->scopeConfig->getValue('payment/'.$payment->getCode().'/title_webpos');
+            if(empty($title)) $title=$payment->getTitle();
+
+            $data['payment_methods'][] = ['code' => $payment->getCode(), 'label' => $title];
         }
         $this->eventManager->dispatch('gsoft_webpos_before_return_quote', ['quote' => &$data]);
         return [$data];
@@ -487,7 +490,7 @@ class Quote implements QuoteInterface
             $payment = $quote->getPayment();
             $payment_description="";
 
-            $payment_code = 'webposcash';
+            $payment_code = null;
             if (!empty($data['payments'])) {
                 foreach ($data['payments'] as $payment_item) {
                     if(empty($payment_code)) $payment_code = $payment_item['code'];
@@ -497,6 +500,7 @@ class Quote implements QuoteInterface
                     else $has_installments=true;
                 }
             }
+            if(empty($payment_code)) $payment_code= 'webposcash';
             if(!$has_installments) $payed_installment=0;
             $quote->setData("webpos_installments", $payed_installment);
 

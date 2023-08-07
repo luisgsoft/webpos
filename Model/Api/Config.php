@@ -77,7 +77,9 @@ class Config implements ConfigInterface
             }else {*/
             $p = $this->paymentFactory->create();
             $p->setCode($k);
-            $p->setLabel($payment);
+            $title=$this->scopeConfig->getValue("payment/".$k."/title_webpos");
+            if(!empty($title)) $p->setLabel($title);
+            else $p->setLabel($payment);
             $return_payments[] = $p;
             //}
 

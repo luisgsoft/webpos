@@ -99,7 +99,10 @@
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status\Newprocessing</source_model>
                 </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Title</label>
+                    <label>Nombre para magento</label>
+                </field>
+                <field id="title_webpos" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Nombre a mostrar en desglose</label>
                 </field>
                 <field id="allowspecific" translate="label" type="allowspecific" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment from Applicable Countries</label>
@@ -125,6 +128,9 @@
                 </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Title</label>
+                </field>
+                <field id="title_webpos" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Nombre a mostrar en desglose</label>
                 </field>
                 <field id="allowspecific" translate="label" type="allowspecific" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment from Applicable Countries</label>

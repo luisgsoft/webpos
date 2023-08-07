@@ -6,13 +6,15 @@
             <webposcash>
                 <model>Gsoft\Webpos\Model\Payment\Cash</model>
                 <active>1</active>
-                <title>Pago en webpos en efectivo</title>
+                <title>Pago en webpos</title>
+                <title_webpos>Efectivo</title_webpos>
                 <order_status>processing</order_status><!-- set default order status-->
             </webposcash>
             <webposcard>
                 <model>Gsoft\Webpos\Model\Payment\Card</model>
                 <active>1</active>
-                <title>Pago en webpos con tarjeta</title>
+                <title>Pago en webpos</title>
+                <title_webpos>Tarjeta</title_webpos>
                 <order_status>processing</order_status>
             </webposcard>
             <webpos_installment>

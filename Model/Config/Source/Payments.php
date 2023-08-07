@@ -23,7 +23,9 @@ class Payments extends \Magento\Framework\DataObject
         foreach ($payments as $paymentCode => $paymentModel) {
 
             $paymentTitle = $this->_appConfigScopeConfigInterface
-                ->getValue('payment/'.$paymentCode.'/title');
+                ->getValue('payment/'.$paymentCode.'/title_webpos');
+            if(empty($paymentTitle)) $paymentTitle = $this->_appConfigScopeConfigInterface
+                    ->getValue('payment/'.$paymentCode.'/title');
             $methods[$paymentCode] = array(
                 'label' => $paymentTitle,
                 'value' => $paymentCode
