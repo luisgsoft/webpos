@@ -46,6 +46,10 @@ class OrderPaymentRepository implements OrderPaymentRepositoryInterface
      */
     protected $orderPaymentFactory;
 
+    /**
+     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
+     */
+    protected $timezone;
 
     /**
      * @param ResourceOrderPayment $resource
@@ -59,13 +63,15 @@ class OrderPaymentRepository implements OrderPaymentRepositoryInterface
         OrderPaymentInterfaceFactory $orderPaymentFactory,
         OrderPaymentCollectionFactory $orderPaymentCollectionFactory,
         OrderPaymentSearchResultsInterfaceFactory $searchResultsFactory,
-        CollectionProcessorInterface $collectionProcessor
+        CollectionProcessorInterface $collectionProcessor,
+        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone
     ) {
         $this->resource = $resource;
         $this->orderPaymentFactory = $orderPaymentFactory;
         $this->orderPaymentCollectionFactory = $orderPaymentCollectionFactory;
         $this->searchResultsFactory = $searchResultsFactory;
         $this->collectionProcessor = $collectionProcessor;
+        $this->timezone=$timezone;
     }
 
     /**
@@ -112,6 +118,7 @@ class OrderPaymentRepository implements OrderPaymentRepositoryInterface
 
         $items = [];
         foreach ($collection as $model) {
+            $model->setCreatedAt($this->timezone->date(new \DateTime($model->getCreatedAt()))->format('Y/m/d H:i:s'));
             $items[] = $model;
         }
 
