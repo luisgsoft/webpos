@@ -277,8 +277,7 @@ class Quote implements QuoteInterface
 
         $shipping_method = $this->scopeConfig->getValue("webpos/general/shipping_default");
         $shippingAddress = $quote->getShippingAddress();
-        $shippingAddress->setCollectShippingRates(true)
-            ->collectShippingRates();
+
         foreach ($shippingAddress->getAllShippingRates() as $rate) {
             if ($rate->getCode() == "freeshipping_freeshipping") {
                 $shipping_method = "freeshipping_freeshipping";
@@ -287,8 +286,9 @@ class Quote implements QuoteInterface
         }
         $shippingAddress->setShippingMethod($shipping_method);
 
-        $quote->collectTotals()->save();
+        $quote->collectTotals();
 
+        $quote->save();
         $cloned_items = [];
         foreach ($data['items'] as $k => $item) {
             if (empty($item['gift'])) {
