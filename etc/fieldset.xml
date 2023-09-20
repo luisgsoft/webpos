@@ -20,6 +20,9 @@
             <field name="webpos_installments">
                 <aspect name="to_order" />
             </field>
+            <field name="webpos_booking">
+                <aspect name="to_order" />
+            </field>
         </fieldset>
     </scope>
 </config>

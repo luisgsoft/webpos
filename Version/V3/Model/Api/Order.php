@@ -15,29 +15,32 @@ class Order implements OrderInterface
     protected $invoiceService;
     protected $transactionFactory;
     protected $logger;
+    protected $db;
 
     public function __construct(
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Sales\Model\OrderRepository         $orderRepository,
-        \Gsoft\Webpos\Model\OrderPaymentFactory                      $orderPaymentFactory,
+        \Magento\Store\Model\StoreManagerInterface           $storeManager,
+        \Magento\Sales\Model\OrderRepository                 $orderRepository,
+        \Gsoft\Webpos\Model\OrderPaymentFactory              $orderPaymentFactory,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezoneInterface,
-        \Magento\Sales\Model\Order\ShipmentFactory                   $shipmentFactory,
-        \Magento\Framework\App\Config\ScopeConfigInterface           $scopeConfig,
-        \Magento\Sales\Model\Service\InvoiceService                  $invoiceService,
-        \Magento\Framework\DB\TransactionFactory                     $transactionFactory,
-        \Gsoft\Webpos\Logger\Logger $logger
+        \Magento\Sales\Model\Order\ShipmentFactory           $shipmentFactory,
+        \Magento\Framework\App\Config\ScopeConfigInterface   $scopeConfig,
+        \Magento\Sales\Model\Service\InvoiceService          $invoiceService,
+        \Magento\Framework\DB\TransactionFactory             $transactionFactory,
+        \Gsoft\Webpos\Logger\Logger                          $logger,
+        \Magento\Framework\App\ResourceConnection            $resource
 
     )
     {
         $this->storeManager = $storeManager;
         $this->orderRepository = $orderRepository;
         $this->orderPaymentFactory = $orderPaymentFactory;
-        $this->timezoneInterface=$timezoneInterface;
-        $this->shipmentFactory=$shipmentFactory;
+        $this->timezoneInterface = $timezoneInterface;
+        $this->shipmentFactory = $shipmentFactory;
         $this->scopeConfig = $scopeConfig;
-        $this->invoiceService=$invoiceService;
-        $this->transactionFactory=$transactionFactory;
-        $this->logger=$logger;
+        $this->invoiceService = $invoiceService;
+        $this->transactionFactory = $transactionFactory;
+        $this->logger = $logger;
+        $this->db = $resource->getConnection();
     }
 
     /**
@@ -46,13 +49,13 @@ class Order implements OrderInterface
      */
     public function pay($payment)
     {
-        $errores=[];
+        $errores = [];
         try {
             $order_id = $payment->getOrderId();
             $order = $this->orderRepository->get($order_id);
             $dateTime = $this->timezoneInterface->date()->format('Y-m-d H:i:s');
             $due = $order->getTotalDue() - $order->getData("webpos_installments");
-            if($payment->getAmount() > $due) $payment->setAmount($due);
+            if ($payment->getAmount() > $due) $payment->setAmount($due);
             $order_payment = $order->getPayment();
             $info = $order_payment->getAdditionalInformation();
             $payment_array = ['code' => $payment->getCode(), 'label' => $payment->getLabel(), 'delivered' => $payment->getDelivered(), 'reference' => $payment->getReference(), 'name' => $payment->getName(), 'amount' => $payment->getAmount()];
@@ -64,7 +67,7 @@ class Order implements OrderInterface
             $installments += $payment->getAmount();
             $order->setData("webpos_installments", $installments);
             $due = $order->getTotalDue() - $order->getData("webpos_installments");
-            if($due<0.01) $order->setData("webpos_installments", null);
+            if ($due < 0.01) $order->setData("webpos_installments", null);
             $this->orderRepository->save($order);
 
             $webpospayment = $this->orderPaymentFactory->create();
@@ -129,7 +132,7 @@ class Order implements OrderInterface
                 $order->setStatus($this->scopeConfig->getValue("webpos/general/order_status"));
                 $order->addStatusHistoryComment(__($this->scopeConfig->getValue("webpos/general/payment_description")), false);
             }
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $this->logger->info($e->getMessage());
             $this->logger->info($e->getTraceAsString());
             $errores[] = $e->getMessage();
@@ -139,5 +142,40 @@ class Order implements OrderInterface
 
         return [$data];
     }
+    /**
+     * {@inheritdoc}
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    public function book($order_id, $status)
+    {
+        $errores = [];
+        $data = [];
+        try {
+            $value = ($status != 1) ? "null" : "1";
+            $this->db->beginTransaction();
+            $sql = [];
+            $sql[] = "update sales_order set webpos_booking=" . $value . " where entity_id=" . $order_id;
+            $sql[] = "update sales_order_grid set webpos_booking=" . $value . " where entity_id=" . $order_id;
+            $sql[] = "update sales_invoice set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $sql[] = "update sales_invoice_grid set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $sql[] = "update sales_shipment set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $sql[] = "update sales_shipment_grid set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $sql[] = "update sales_creditmemo set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $sql[] = "update sales_creditmemo_grid set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $sql[] = "update webpos_order_payment set webpos_booking=" . $value . " where order_id=" . $order_id;
+            foreach ($sql as $s) {
+                $this->db->query($s);
+            }
+            $this->db->commit();
 
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            $this->logger->info($e->getMessage());
+            $this->logger->info($e->getTraceAsString());
+            $errores[] = $e->getMessage();
+        }
+        $data['errors'] = $errores;
+
+        return [$data];
+    }
 }

@@ -23,6 +23,7 @@ interface OrderPaymentInterface
     const TERMINAL = 'terminal';
     const USER = 'user';
     const INCREMENT_ID = 'increment_id';
+    const BOOKING = 'webpos_booking';
     /**
      * Get orderpayment_id
      * @return string|null
@@ -187,4 +188,16 @@ interface OrderPaymentInterface
      * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
      */
     public function setIncrementId($increment_id);
+    /**
+     * Get webpos_booking
+     * @return int|null
+     */
+    public function getWebposBooking();
+
+    /**
+     * Set terminal
+     * @param int $value
+     * @return \Gsoft\Webpos\OrderPayment\Api\Data\OrderPaymentInterface
+     */
+    public function setWebposBooking($value);
 }

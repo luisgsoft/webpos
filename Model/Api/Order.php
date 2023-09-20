@@ -34,7 +34,15 @@ class Order implements OrderInterface
 
         return $this->manager->pay($data);
     }
+    /**
+     * {@inheritdoc}
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    public function book($order_id, $status)
+    {
 
+        return $this->manager->book($order_id, $status);
+    }
 
 
 }

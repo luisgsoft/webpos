@@ -85,6 +85,9 @@
                 <field id="ga_secret" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Measurement GA4</label>
                 </field>
+                <field id="prefix_booking" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Prefijo reservas</label>
+                </field>
             </group>
         </section>
         <section id="payment">

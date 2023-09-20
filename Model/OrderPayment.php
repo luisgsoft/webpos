@@ -224,4 +224,19 @@ class OrderPayment extends AbstractModel implements OrderPaymentInterface
     {
         return $this->setData(self::INCREMENT_ID, $increment_id);
     }
+    /**
+     * @inheritDoc
+     */
+    public function getWebposBooking()
+    {
+        return $this->getData(self::BOOKING);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setWebposBooking($value)
+    {
+        return $this->setData(self::BOOKING, $value);
+    }
 }

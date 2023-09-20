@@ -42,10 +42,12 @@ class OrderRepository
     {
         $terminal = $order->getData("webpos_terminal");
         $installments = $order->getData("webpos_installments");
+        $booking = $order->getData("webpos_booking");
         $extensionAttributes = $order->getExtensionAttributes();
         $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
         $extensionAttributes->setWebposTerminal($terminal);
         $extensionAttributes->setWebposInstallments($installments);
+         $extensionAttributes->setWebposBooking($booking);
         $order->setExtensionAttributes($extensionAttributes);
 
         return $order;
@@ -65,14 +67,16 @@ class OrderRepository
 
         foreach ($orders as &$order) {
             $terminal = $order->getData("webpos_terminal");
+            $booking = $order->getData("webpos_booking");
             $installments = $order->getData("webpos_installments");
             $extensionAttributes = $order->getExtensionAttributes();
             $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
             $extensionAttributes->setWebposTerminal($terminal);
-            $extensionAttributes->setWebposInstallments($installments);
+            $extensionAttributes->setWebposBooking($booking);
             $order->setExtensionAttributes($extensionAttributes);
         }
 
         return $searchResult;
     }
+
 }

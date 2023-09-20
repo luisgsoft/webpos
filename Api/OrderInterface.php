@@ -23,6 +23,13 @@ interface OrderInterface
      * @return mixed
      */
     public function pay($payment);
-
+    /**
+     * book order
+     *
+     * @param int $order_id
+     * @param int $status
+     * @return mixed
+     */
+    public function book($order_id, $status);
 
 }

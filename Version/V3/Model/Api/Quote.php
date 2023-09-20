@@ -35,6 +35,7 @@ class Quote implements QuoteInterface
     protected $eventManager;
     protected $logger;
     protected $orderPaymentFactory;
+    protected $db;
 
 
     public function __construct(
@@ -64,7 +65,8 @@ class Quote implements QuoteInterface
         \Magento\Tax\Model\Calculation                               $_taxCalculation,
         \Magento\Framework\Event\ManagerInterface                    $eventManager,
         \Psr\Log\LoggerInterface                                     $logger,
-        \Gsoft\Webpos\Model\OrderPaymentFactory                      $orderPaymentFactory
+        \Gsoft\Webpos\Model\OrderPaymentFactory                      $orderPaymentFactory,
+        \Magento\Framework\App\ResourceConnection $resource
 
 
     )
@@ -98,6 +100,7 @@ class Quote implements QuoteInterface
         $this->eventManager = $eventManager;
         $this->logger = $logger;
         $this->orderPaymentFactory = $orderPaymentFactory;
+        $this->db = $resource->getConnection();
     }
 
     protected function getTaxPercent($product, $countryCode = null, $customerTaxClassId = null)
@@ -157,6 +160,7 @@ class Quote implements QuoteInterface
         $quote->setWebposTerminal($data['terminal']);
         $quote->setWebposAlias($data['webpos_alias']);
         $quote->setWebposUser($data['webpos_user']);
+
         if (isset($data['discount_percent'])) $quote->setWebposDiscountPercent($data['discount_percent']);
         else $quote->setWebposDiscountPercent(0);
         if (isset($data['discount_fixed'])) $quote->setWebposDiscountFixed($data['discount_fixed']);
@@ -451,6 +455,18 @@ class Quote implements QuoteInterface
         $quote->setWebposAlias($data['webpos_alias']);
         $quote->setWebposUser($data['webpos_user']);
 
+        $quote->setWebposBooking($data['webpos_booking']??null);
+        $prefix_booking= $this->scopeConfig->getValue('webpos/general/prefix_booking')??"9";
+
+        if(!empty($data['webpos_booking'])){
+
+            $quote->setReservedOrderId($prefix_booking.$this->getNextBookingId());
+
+        }else{
+            $quote->setReservedOrderId(null);
+            $quote->setWebposBooking(null);
+        }
+
         try {
             if (!empty($data['coupon_code'])) {
                 $total_coupons = $this->getInfoCoupon($data['coupon_code']);
@@ -545,6 +561,7 @@ class Quote implements QuoteInterface
 
                 }
             }
+
             $quote->save();
 
 
@@ -567,6 +584,7 @@ class Quote implements QuoteInterface
                 $webpospayment->setData("order_id", $order->getId());
                 $webpospayment->setData("increment_id", $order->getIncrementId());
                 $webpospayment->setData("created_at", $order->getCreatedAt());
+                $webpospayment->setData("webpos_booking", $data['webpos_booking']);
                 $webpospayment->save();
 
             }
@@ -579,7 +597,7 @@ class Quote implements QuoteInterface
 
 
         try {
-            if ($this->scopeConfig->getValue("webpos/general/create_shipment") && !$has_installments) {
+            if ($this->scopeConfig->getValue("webpos/general/create_shipment") && !$has_installments ) {
                 // load order from database
                 if ($order->canShip()) {
                     $items = [];
@@ -592,11 +610,17 @@ class Quote implements QuoteInterface
                     // create the shipment
                     $shipment = $this->shipmentFactory->create($order, $items);
                     $shipment->getExtensionAttributes()->setSourceCode($this->scopeConfig->getValue("webpos/general/source_stock"));
+                    $shipment->setData("webpos_booking", $data["webpos_booking"]);
                     $shipment->register();
                     // save the newly created shipment
                     $transactionSave = $this->transactionFactory->create()->addObject($shipment);
                     $transactionSave->save();
                     $data['shipment_id'] = $shipment->getId();
+                    if(!empty($data["webpos_booking"])) {
+                        $sql="update sales_shipment_grid set webpos_booking=1 where entity_id=" . $shipment->getId();
+                        $this->db->query($sql);
+
+                    }
                 }
             }
 
@@ -606,10 +630,11 @@ class Quote implements QuoteInterface
             $errores[] = $e->getMessage();
         }
         try {
-            if ($this->scopeConfig->getValue("webpos/general/create_invoice") && !$has_installments) {
+            if ($this->scopeConfig->getValue("webpos/general/create_invoice") && !$has_installments ) {
                 //generate invoice
                 $invoice = $this->invoiceService->prepareInvoice($order);
                 $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
+                $invoice->setData("webpos_booking", $data["webpos_booking"]);
                 $invoice->register();
                 $invoice->getOrder()->setCustomerNoteNotify(false);
                 $invoice->getOrder()->setIsInProcess(true);
@@ -742,5 +767,18 @@ class Quote implements QuoteInterface
     {
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
     }
+    private function getNextBookingId(){
+        $prefix=$this->scopeConfig->getValue('webpos/general/prefix_booking');
 
+        $sql="select increment_id from sales_order where webpos_booking=1 AND increment_id like ".$this->db->quote($prefix."%")." order by entity_id desc limit 1";
+        $increment_id = $this->db->fetchOne($sql);
+
+        if(!empty($increment_id)) {
+            $increment_id = str_replace($prefix, "", $increment_id);
+            $increment_id = intval($increment_id);
+        } else $increment_id=0;
+        $increment_id++;
+
+        return str_pad($increment_id, 8, "0", STR_PAD_LEFT);
+    }
 }

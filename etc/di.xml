@@ -48,14 +48,34 @@
     </type>
     <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid">
         <arguments>
-
             <argument name="columns" xsi:type="array">
                 <item name="webpos_user" xsi:type="string">sales_order.webpos_user</item>
                 <item name="webpos_terminal" xsi:type="string">sales_order.webpos_terminal</item>
+                <item name="webpos_booking" xsi:type="string">sales_order.webpos_booking</item>
             </argument>
         </arguments>
     </virtualType>
-
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Invoice\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="webpos_booking" xsi:type="string">sales_invoice.webpos_booking</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Shipment\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="webpos_booking" xsi:type="string">sales_shipment.webpos_booking</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Creditmemo\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="webpos_booking" xsi:type="string">sales_creditmemo.webpos_booking</item>
+            </argument>
+        </arguments>
+    </virtualType>
     <type name="Magento\Quote\Model\Quote\Item">
         <plugin name="quote_different_lines" type="Gsoft\Webpos\Plugin\Quote\Item"/>
     </type>
@@ -101,7 +121,12 @@
         <arguments>
             <argument name="collections" xsi:type="array">
                 <item name="gsoft_webpos_hold_listing_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Hold\Grid\Collection</item>
+                <item name="sales_order_grid_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Order\Grid\Collection</item>
+                <item name="sales_order_invoice_grid_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Invoice\Grid\Collection</item>
+                <item name="sales_order_shipment_grid_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Shipment\Grid\Collection</item>
+                <item name="sales_order_creditmemo_grid_data_source" xsi:type="string">Gsoft\Webpos\Model\ResourceModel\Creditmemo\Grid\Collection</item>
             </argument>
         </arguments>
     </type>
+
 </config>
