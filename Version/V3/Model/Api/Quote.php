@@ -770,7 +770,7 @@ class Quote implements QuoteInterface
     private function getNextBookingId(){
         $prefix=$this->scopeConfig->getValue('webpos/general/prefix_booking');
 
-        $sql="select increment_id from sales_order where webpos_booking=1 AND increment_id like ".$this->db->quote($prefix."%")." order by entity_id desc limit 1";
+        $sql="select increment_id from sales_order where increment_id like ".$this->db->quote($prefix."%")." order by entity_id desc limit 1";
         $increment_id = $this->db->fetchOne($sql);
 
         if(!empty($increment_id)) {

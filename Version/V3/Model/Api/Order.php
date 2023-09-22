@@ -3,6 +3,7 @@
 namespace Gsoft\Webpos\Version\V3\Model\Api;
 
 use Gsoft\Webpos\Api\OrderInterface;
+use Magento\SalesSequence\Model\Manager;
 
 class Order implements OrderInterface
 {
@@ -27,7 +28,8 @@ class Order implements OrderInterface
         \Magento\Sales\Model\Service\InvoiceService          $invoiceService,
         \Magento\Framework\DB\TransactionFactory             $transactionFactory,
         \Gsoft\Webpos\Logger\Logger                          $logger,
-        \Magento\Framework\App\ResourceConnection            $resource
+        \Magento\Framework\App\ResourceConnection            $resource,
+        Manager $sequenceManager
 
     )
     {
@@ -41,6 +43,7 @@ class Order implements OrderInterface
         $this->transactionFactory = $transactionFactory;
         $this->logger = $logger;
         $this->db = $resource->getConnection();
+        $this->sequenceManager = $sequenceManager;
     }
 
     /**
@@ -154,15 +157,25 @@ class Order implements OrderInterface
             $value = ($status != 1) ? "null" : "1";
             $this->db->beginTransaction();
             $sql = [];
-            $sql[] = "update sales_order set webpos_booking=" . $value . " where entity_id=" . $order_id;
-            $sql[] = "update sales_order_grid set webpos_booking=" . $value . " where entity_id=" . $order_id;
-            $sql[] = "update sales_invoice set webpos_booking=" . $value . " where order_id=" . $order_id;
-            $sql[] = "update sales_invoice_grid set webpos_booking=" . $value . " where order_id=" . $order_id;
-            $sql[] = "update sales_shipment set webpos_booking=" . $value . " where order_id=" . $order_id;
-            $sql[] = "update sales_shipment_grid set webpos_booking=" . $value . " where order_id=" . $order_id;
-            $sql[] = "update sales_creditmemo set webpos_booking=" . $value . " where order_id=" . $order_id;
-            $sql[] = "update sales_creditmemo_grid set webpos_booking=" . $value . " where order_id=" . $order_id;
+            $order=$this->orderRepository->get($order_id);
+            $order_inc=$this->getNextAutoincrement($order->getStoreId(),  \Magento\Sales\Model\Order::ENTITY);
+            $invoice_inc=$this->getNextAutoincrement($order->getStoreId(),  "invoice");
+            $shipment_inc=$this->getNextAutoincrement($order->getStoreId(),  "shipment");
+            $creditmemo_inc=$this->getNextAutoincrement($order->getStoreId(),  "creditmemo");
+
+            $sql[] = "update sales_order set webpos_booking=" . $value . ", increment_id=".$this->db->quote($order_inc)." where entity_id=" . $order_id;
+            $sql[] = "update sales_order_grid set webpos_booking=" . $value . ", increment_id=".$this->db->quote($order_inc)." where entity_id=" . $order_id;
+            $sql[] = "update sales_invoice set webpos_booking=" . $value . ", increment_id=".$this->db->quote($invoice_inc)." where order_id=" . $order_id;
+            $sql[] = "update sales_invoice_grid set webpos_booking=" . $value . ", increment_id=".$this->db->quote($invoice_inc)." where order_id=" . $order_id;
+            $sql[] = "update sales_shipment set webpos_booking=" . $value . ", increment_id=".$this->db->quote($shipment_inc)." where order_id=" . $order_id;
+            $sql[] = "update sales_shipment_grid set webpos_booking=" . $value . ", increment_id=".$this->db->quote($shipment_inc)." where order_id=" . $order_id;
+            $sql[] = "update sales_creditmemo set webpos_booking=" . $value . ", increment_id=".$this->db->quote($creditmemo_inc)." where order_id=" . $order_id;
+            $sql[] = "update sales_creditmemo_grid set webpos_booking=" . $value . ", increment_id=".$this->db->quote($creditmemo_inc)." where order_id=" . $order_id;
             $sql[] = "update webpos_order_payment set webpos_booking=" . $value . " where order_id=" . $order_id;
+         /*   $sql[]="insert into sequence_order_".$order->getStoreid()." VALUES (NULL)";
+            $sql[]="insert into sequence_invoice_".$order->getStoreid()." VALUES (NULL)";
+            $sql[]="insert into sequence_shipment_".$order->getStoreid()." VALUES (NULL)";
+            $sql[]="insert into sequence_creditmemo_".$order->getStoreid()." VALUES (NULL)";*/
             foreach ($sql as $s) {
                 $this->db->query($s);
             }
@@ -178,4 +191,12 @@ class Order implements OrderInterface
 
         return [$data];
     }
+    public function getNextAutoincrement($store_id, $entity)
+    {
+        return $this->sequenceManager->getSequence(
+           $entity,
+            $store_id
+        )->getNextValue();
+    }
+
 }
