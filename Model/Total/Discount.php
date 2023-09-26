@@ -46,9 +46,16 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
         $TotalAmount_without_tax = $TotalAmountTaxed=0;
         $units = 0;
 
+        $max_discount = $total->getSubtotal() - abs($total->getDiscountAmount());
+        if($max_discount<=0){
+            $quote->setWebposDiscountFixed(0);
+            $quote->setWebposDiscountLabel(null);
+            $quote->setWebposDiscountPercent(0);
+            return $this;
+        }
         if ($quote->getWebposDiscountPercent() > 0) {
 
-
+            if($quote->getWebposDiscountPercent()>100) $quote->setWebposDiscountPercent(100);
 
             foreach ($quote->getAllVisibleItems() as $item) {
 
@@ -66,8 +73,12 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             $TotalAmount=$TotalAmountTaxed;
 
         } else {
+            if(abs($quote->getWebposDiscountFixed()) > $max_discount){
+                $quote->setWebposDiscountFixed($max_discount);
+            }
             //total de descuento con iva
             $TotalAmount = $quote->getWebposDiscountFixed();
+
             $TotalAmountTaxed=$TotalAmount;
             $TotalAmount_without_tax = $TotalAmount;
             /**/
@@ -135,8 +146,8 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
         $total->setDiscountDescription($label);
         $total->setDiscountAmount($discountAmount);
         $total->setBaseDiscountAmount($discountAmount);
-        $total->setSubtotalWithDiscount($total->getSubtotal() - abs($TotalAmount_without_tax));
-        $total->setBaseSubtotalWithDiscount($total->getBaseSubtotal()  - abs($TotalAmount_without_tax));
+        $total->setSubtotalWithDiscount($total->getSubtotalWithDiscount() - abs($TotalAmount_without_tax));
+        $total->setBaseSubtotalWithDiscount($total->getBaseSubtotalWithDiscount()  - abs($TotalAmount_without_tax));
 
 
         /*print_r($total->debug());

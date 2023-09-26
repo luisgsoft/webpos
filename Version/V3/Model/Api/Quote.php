@@ -369,6 +369,7 @@ class Quote implements QuoteInterface
         $data['coupon_code'] = $quote->getCouponCode();
         $data['subtotal_with_discount'] = max(0, $quote->getSubtotalWithDiscount());
         $data['shipping_amount'] = max(0, $quote->getShippingAddress()->getShippingAmount());
+        $data['discount_fixed']=$quote->getWebposDiscountFixed();
         $totals = $quote->getTotals();
 
         /*@var \Magento\Quote\Model\Quote\Address\Total $tax*/
