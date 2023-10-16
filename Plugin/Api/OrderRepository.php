@@ -12,7 +12,6 @@ class OrderRepository
 {
 
 
-
     /**
      * Order Extension Attributes Factory
      *
@@ -20,14 +19,17 @@ class OrderRepository
      */
     protected $extensionFactory;
 
+    protected $orderFactory;
+
     /**
      * OrderRepositoryPlugin constructor
      *
      * @param OrderExtensionFactory $extensionFactory
      */
-    public function __construct(OrderExtensionFactory $extensionFactory)
+    public function __construct(OrderExtensionFactory $extensionFactory, \Magento\Sales\Model\OrderFactory $orderFactory)
     {
         $this->extensionFactory = $extensionFactory;
+        $this->orderFactory = $orderFactory;
     }
 
     /**
@@ -43,11 +45,15 @@ class OrderRepository
         $terminal = $order->getData("webpos_terminal");
         $installments = $order->getData("webpos_installments");
         $booking = $order->getData("webpos_booking");
+        $o = $this->orderFactory->create()->load($order->getId());
+
         $extensionAttributes = $order->getExtensionAttributes();
         $extensionAttributes = $extensionAttributes ? $extensionAttributes : $this->extensionFactory->create();
         $extensionAttributes->setWebposTerminal($terminal);
         $extensionAttributes->setWebposInstallments($installments);
-         $extensionAttributes->setWebposBooking($booking);
+        $extensionAttributes->setWebposBooking($booking);
+        $extensionAttributes->setCanCancel($o->canCancel());
+        $extensionAttributes->setCanRefund($o->canCreditmemo());
         $order->setExtensionAttributes($extensionAttributes);
 
         return $order;

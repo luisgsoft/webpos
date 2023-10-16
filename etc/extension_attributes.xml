@@ -25,6 +25,8 @@
         <attribute code="webpos_user" type="string" />
         <attribute code="webpos_installments" type="float" />
         <attribute code="webpos_booking" type="int" />
+        <attribute code="can_refund" type="int" />
+        <attribute code="can_cancel" type="int" />
     </extension_attributes>
     <extension_attributes for="Magento\Sales\Api\Data\CreditmemoInterface">
         <attribute code="webpos_payment" type="string" />
