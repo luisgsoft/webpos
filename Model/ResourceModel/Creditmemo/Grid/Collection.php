@@ -11,7 +11,7 @@ class Collection extends OriginalCollection
 {
     protected function _renderFiltersBefore()
     {
-        $this->addFieldToFilter("webpos_booking", ["null" => true]);
+        $this->addFieldToFilter("main_table.webpos_booking", ["null" => true]);
         parent::_renderFiltersBefore();
 
     }
