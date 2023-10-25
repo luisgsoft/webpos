@@ -461,13 +461,13 @@ class Quote implements QuoteInterface
 
         if(!empty($data['webpos_booking'])){
 
-            $quote->setReservedOrderId($prefix_booking.$this->getNextBookingId());
+            $quote->setReservedOrderId($prefix_booking.$this->getNextBookingId())->save();
 
         }else{
             $quote->setReservedOrderId(null);
             $quote->setWebposBooking(null);
         }
-
+//echo  $quote->getReservedOrderId();die();
         try {
             if (!empty($data['coupon_code'])) {
                 $total_coupons = $this->getInfoCoupon($data['coupon_code']);
@@ -775,7 +775,7 @@ class Quote implements QuoteInterface
         $increment_id = $this->db->fetchOne($sql);
 
         if(!empty($increment_id)) {
-            $increment_id = str_replace($prefix, "", $increment_id);
+            $increment_id = substr($increment_id, strlen($prefix));
             $increment_id = intval($increment_id);
         } else $increment_id=0;
         $increment_id++;
