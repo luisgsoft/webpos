@@ -58,7 +58,11 @@ class Order implements OrderInterface
             $order = $this->orderRepository->get($order_id);
             $dateTime = $this->timezoneInterface->date()->format('Y-m-d H:i:s');
             $due = $order->getTotalDue() - $order->getData("webpos_installments");
-            if ($payment->getAmount() > $due) $payment->setAmount($due);
+            if ($payment->getAmount() > $due){
+                $payment->setAmount($due);
+                $payment->setDelivered($due);
+            }
+
             $order_payment = $order->getPayment();
             $info = $order_payment->getAdditionalInformation();
             $payment_array = ['code' => $payment->getCode(), 'label' => $payment->getLabel(), 'delivered' => $payment->getDelivered(), 'reference' => $payment->getReference(), 'name' => $payment->getName(), 'amount' => $payment->getAmount()];
