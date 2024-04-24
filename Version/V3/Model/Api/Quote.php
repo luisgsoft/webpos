@@ -530,7 +530,7 @@ class Quote implements QuoteInterface
 
 
             $shippingAddress = $quote->getShippingAddress();
-            $shippingAddress->setCollectShippingRates(true)
+            $shippingAddress->setCollectShippingRates(false)
                 ->collectShippingRates()
                 ->setShippingMethod($shipping_method = $this->scopeConfig->getValue("webpos/general/shipping_default"));
 

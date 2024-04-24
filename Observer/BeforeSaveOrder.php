@@ -12,6 +12,7 @@ class BeforeSaveOrder implements ObserverInterface
      */
     protected $objectCopyService;
     protected $fieldsetConfig;
+    protected $quote;
 
 
     /**

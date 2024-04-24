@@ -8,6 +8,10 @@ namespace Gsoft\Webpos\Model\Total;
 class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
 {
     protected $scopeConfig;
+    protected $eventManager;
+    protected $calculator;
+    protected $storeManager;
+    protected $priceCurrency;
     public function __construct(
         \Magento\Framework\Event\ManagerInterface $eventManager,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
