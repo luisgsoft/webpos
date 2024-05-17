@@ -21,18 +21,22 @@ class CreditmemoCreate extends \Magento\Sales\Model\RefundOrder implements \Mage
 
         $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
         $connection = $resource->getConnection();
+
         /**@var $ext \Magento\Sales\Api\Data\CreditmemoCreationArgumentsExtensionMagento\Sales\Api\Data\CreditmemoExtension */
         $ext = $arguments->getExtensionAttributes();
-        $terminal = $ext->getWebposTerminal();
-        $user = $ext->getWebposUser()??null;
+        $terminal=$user=$booking=$payment=null;
+        if(!empty($ext)) {
+            $terminal = $ext->getWebposTerminal();
+            $user = $ext->getWebposUser() ?? null;
 
-        $booking = $ext->getWebposBooking()??NULL;
-        $payment = $ext->getWebposPayment();
+            $booking = $ext->getWebposBooking() ?? NULL;
+            $payment = $ext->getWebposPayment();
+        }
         //$eventManager->dispatch('gsoft_webpos_creditmemo_api', ['creditmemo' => 13, 'arguments'=>$arguments]);
         $id = parent::execute($orderId, $items, $notify, $appendComment, $comment, $arguments);
         $eventManager->dispatch('gsoft_webpos_creditmemo_api', ['creditmemo' => $id, 'arguments' => $arguments]);
 
-        if ($id > 0) {
+        if ($id > 0 && !empty($terminal)) {
 
             $creditmemo = $objectManager->get('\Magento\Sales\Model\Order\CreditmemoRepository')->get($id);
             /**@var $creditmemo \Magento\Sales\Api\Data\CreditmemoInterface */
