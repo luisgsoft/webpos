@@ -25,7 +25,7 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
     protected $db;
 
 
-    protected $quote;
+    protected $checkout;
     protected $state;
 
     /**
@@ -52,7 +52,7 @@ class Shipping extends \Magento\Shipping\Model\Carrier\AbstractCarrier implement
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
         $this->db=$_db->getConnection();
-        $this->quote = $checkoutSession->getQuote();
+        $this->checkout = $checkoutSession;
         $this->state=$state;
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
