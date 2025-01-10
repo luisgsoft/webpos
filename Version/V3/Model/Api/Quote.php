@@ -431,7 +431,7 @@ class Quote implements QuoteInterface
             $rule->setUsesPerCoupon($rule->getUsesPerCoupon() + 1);
             $rule->setUsesPerCustomer($rule->getUsesPerCustomer() + 1);
             $this->ruleRepository->save($rule);
-            return $rule->$remainDiscount;
+            return $rule->remainDiscount;
         } catch (\Exception $e) {
             return 0;
         }

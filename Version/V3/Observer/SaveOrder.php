@@ -18,6 +18,8 @@ class SaveOrder
     private $scopeConfig;
     protected $getSourceItemsBySku;
     protected $reservesFactory;
+    protected $couponModel;
+    protected $ruleRepository;
 
 
     /**
@@ -29,7 +31,9 @@ class SaveOrder
         StockResolverInterface $stockResolver,
         \Magento\InventoryApi\Api\GetSourceItemsBySkuInterface $getSourceItemsBySku,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Gsoft\Webpos\Model\StockreservationFactory $reservationF
+        \Gsoft\Webpos\Model\StockreservationFactory $reservationF,
+        \Magento\SalesRule\Model\Coupon                              $couponModel,
+        \Magento\SalesRule\Api\RuleRepositoryInterface               $ruleRepository
 
 
     ) {
@@ -39,6 +43,8 @@ class SaveOrder
         $this->scopeConfig = $scopeConfig;
         $this->getSourceItemsBySku = $getSourceItemsBySku;
         $this->reservesFactory=$reservationF;
+        $this->couponModel = $couponModel;
+        $this->ruleRepository = $ruleRepository;
 
 
     }
@@ -49,11 +55,23 @@ class SaveOrder
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         if (!$this->scopeConfig->getValue("webpos/general/enabled")) return;
+        $order = $observer->getEvent()->getData('order');
+        $terminal=$order->getData("webpos_terminal");
+
+        if(empty($terminal)) {
+            $coupon = $order->getCouponCode();
+            if (!empty($coupon) && !empty($order->getDiscountAmount())) {
+
+                $this->updateCouponAmount($coupon, $order);
+            }
+        }
+
+
         if($this->scopeConfig->getValue("webpos/general/disallow_tracking")) return;
         $reservations=[];
         /* @var \Magento\Sales\Model\Order $order */
-        $order = $observer->getEvent()->getData('order');
-        $terminal=$order->getData("webpos_terminal");
+
+
         if(!empty($terminal)) return;
         //if(!empty($order->getData("webpos_terminal"))) return;
         /**@var \Magento\Sales\Model\Order\Item $child*/
@@ -108,6 +126,33 @@ class SaveOrder
 
         arsort($stock);
         return $stock;
+    }
+
+    protected function updateCouponAmount($couponCode, $order)
+    {
+
+        try {
+            $ruleId = $this->couponModel->loadByCode($couponCode)->getRuleId();
+            $rule = $this->ruleRepository->getById($ruleId);
+            if ($rule->getDescription() != "giftcard") return;
+            $total = $rule->getDiscountAmount();
+
+            $remainDiscount = $total - abs($order->getDiscountAmount());
+
+            if(!empty($remainDiscount) && $remainDiscount > 0) {
+                $rule->setDiscountAmount($remainDiscount);
+                $rule->setUsesPerCoupon($rule->getUsesPerCoupon() + 1);
+                $rule->setUsesPerCustomer($rule->getUsesPerCustomer() + 1);
+                $this->ruleRepository->save($rule);
+            }else{
+                $rule->setIsActive(0);
+               // $rule->setDiscountAmount(0);
+                $this->ruleRepository->save($rule);
+            }
+
+        } catch (\Exception $e) {
+
+        }
     }
 
 }
