@@ -99,8 +99,8 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             if ($tax_percent > 0) {
 
                 if(!$this->scopeConfig->getValue("tax/calculation/discount_tax")){
-                    $TotalAmount_without_tax = $TotalAmount;
-                    $TotalAmountTaxed = $TotalAmount*(1+$tax_percent*0.01);
+                    $TotalAmount_without_tax = $TotalAmountTaxed= $TotalAmount;
+                    //$TotalAmountTaxed = $TotalAmount*(1+$tax_percent*0.01);
 
                 }else {
                     $TotalAmount_without_tax = $TotalAmount / (1 + ($tax_percent * 0.01));
@@ -151,8 +151,19 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
         $total->setDiscountDescription($label);
         $total->setDiscountAmount($discountAmount);
         $total->setBaseDiscountAmount($discountAmount);
-        $total->setSubtotalWithDiscount($total->getSubtotalWithDiscount() - abs($TotalAmount_without_tax));
-        $total->setBaseSubtotalWithDiscount($total->getBaseSubtotalWithDiscount()  - abs($TotalAmount_without_tax));
+
+        if (!$this->scopeConfig->getValue("tax/calculation/discount_tax")) {
+            // Descuento antes del IVA => el subtotal con descuento debe recalcularse sobre la base imponible
+            $total->setSubtotalWithDiscount($total->getSubtotal() - abs($TotalAmount_without_tax));
+            $total->setBaseSubtotalWithDiscount($total->getBaseSubtotal() - abs($TotalAmount_without_tax));
+
+        } else {
+            // Descuento después del IVA => mantener subtotalWithDiscount como estaba
+            $total->setSubtotalWithDiscount($total->getSubtotalWithDiscount() - abs($TotalAmount_without_tax));
+            $total->setBaseSubtotalWithDiscount($total->getBaseSubtotalWithDiscount()  - abs($TotalAmount_without_tax));
+        }
+       /* $total->setSubtotalWithDiscount($total->getSubtotalWithDiscount() - abs($TotalAmount_without_tax));
+        $total->setBaseSubtotalWithDiscount($total->getBaseSubtotalWithDiscount()  - abs($TotalAmount_without_tax));*/
 
 
         /*print_r($total->debug());
@@ -167,6 +178,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             $total->addBaseTotalAmount($this->getCode(), -1*abs($TotalAmountTaxed));
 
         }
+       
         return $this;
 
     }
