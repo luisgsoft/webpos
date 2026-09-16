@@ -94,7 +94,7 @@ class Catalog implements CatalogInterface
         \Gsoft\Webpos\Model\StockreservationFactory $reservationF,
         \Gsoft\Webpos\Model\Api\Data\StockFactory $stockFactory,
         \Gsoft\Webpos\Model\Api\Data\StocksourceFactory $stockSourceFactory,
-        \Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory $attributeFactory = null,
+        \Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory $attributeFactory,
         \Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface $getReservationsQuantity,
         \Magento\InventoryApi\Api\SourceRepositoryInterface $sourceRepository,
         \Psr\Log\LoggerInterface $logger
