@@ -13,6 +13,7 @@ class DetectVersion implements DataPatchInterface, PatchRevertableInterface
     protected $scopeConfig;
     protected $directoryList;
     protected $productMetadata;
+    protected $moduleDataSetup;
 
     /**
      * @param ModuleDataSetupInterface $moduleDataSetup
