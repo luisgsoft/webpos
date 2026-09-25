@@ -230,6 +230,14 @@ class Catalog implements CatalogInterface
             if (is_array($taxes) && !empty($taxes['tax'])) $extensionAttributes->setData('webpos_tax', $taxes['tax']);
             else $extensionAttributes->setData('webpos_tax', 0);
 
+            try {
+                $stockItem = $this->_stockItemRepository->get($p->getId());
+                $backorders = $stockItem && (int) $stockItem->getBackorders() !== \Magento\CatalogInventory\Model\Stock::BACKORDERS_NO;
+            } catch (\Exception $e) {
+                $backorders = false;
+            }
+            $extensionAttributes->setData('webpos_backorders', $backorders);
+
             $sourceItemsBySku = $this->getSourceItemsBySku->execute($p->getSku());
 
 

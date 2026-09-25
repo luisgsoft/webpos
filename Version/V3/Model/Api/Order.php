@@ -17,6 +17,7 @@ class Order implements OrderInterface
     protected $transactionFactory;
     protected $logger;
     protected $db;
+    protected $sequenceManager;
 
     public function __construct(
         \Magento\Store\Model\StoreManagerInterface           $storeManager,

@@ -12,8 +12,8 @@ class CreditmemoCreate extends \Magento\Sales\Model\RefundOrder implements \Mage
         array $items = [],
         $notify = false,
         $appendComment = false,
-        \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
-        \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
+        ?\Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
+        ?\Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
     )
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();

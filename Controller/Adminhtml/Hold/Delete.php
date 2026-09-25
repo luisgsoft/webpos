@@ -10,6 +10,22 @@ namespace Gsoft\Webpos\Controller\Adminhtml\Hold;
 class Delete extends \Gsoft\Webpos\Controller\Adminhtml\Hold
 {
 
+    protected $resultRedirectFactory;
+
+    /**
+     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Magento\Framework\Registry $coreRegistry
+     * @param \Magento\Backend\Model\View\Result\RedirectFactory $resultRedirectFactory
+     */
+    public function __construct(
+        \Magento\Backend\App\Action\Context $context,
+        \Magento\Framework\Registry $coreRegistry,
+        \Magento\Backend\Model\View\Result\RedirectFactory $resultRedirectFactory
+    ) {
+        $this->resultRedirectFactory = $resultRedirectFactory;
+        parent::__construct($context, $coreRegistry);
+    }
+
     /**
      * Delete action
      *

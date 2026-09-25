@@ -8,7 +8,7 @@
             "email": "luis@gsoft.es"
         }
     ],
-	"version": "1.0.50",
+	"version": "1.0.51",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": [

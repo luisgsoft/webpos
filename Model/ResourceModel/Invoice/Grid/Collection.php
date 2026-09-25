@@ -17,6 +17,8 @@ use Psr\Log\LoggerInterface as Logger;
  */
 class Collection extends OriginalCollection
 {
+    protected $timeZone;
+
     public function __construct(
         EntityFactory     $entityFactory,
         Logger            $logger,
