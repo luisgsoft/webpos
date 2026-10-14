@@ -26,7 +26,7 @@ class Collection extends OriginalCollection
         EventManager      $eventManager,
                           $mainTable = 'sales_invoice_grid',
                           $resourceModel = Invoice::class,
-        TimezoneInterface $timeZone = null
+        ?TimezoneInterface $timeZone = null
     )
     {
         parent::__construct($entityFactory, $logger, $fetchStrategy, $eventManager, $mainTable, $resourceModel);
