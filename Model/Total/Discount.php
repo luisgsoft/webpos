@@ -178,7 +178,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             $total->addBaseTotalAmount($this->getCode(), -1*abs($TotalAmountTaxed));
 
         }
-       
+
         return $this;
 
     }
@@ -194,7 +194,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             $description = $total->getDiscountDescription();
             $result = [
                 'code' => $this->getCode(),
-                'title' => strlen($description) ? __('Discount (%1)', $description) : __('Discount'),
+                'title' => !empty($description) ? __('Discount (%1)', $description) : __('Discount'),
                 'value' => $amount
             ];
         }
