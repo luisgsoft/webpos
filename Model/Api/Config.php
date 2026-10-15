@@ -17,14 +17,15 @@ class Config implements ConfigInterface
      */
     protected $_paymentHelper;
     protected $paymentFactory;
+    protected $eventManager;
 
     public function __construct(
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Helper\Data $paymentHelper,
         \Gsoft\Webpos\Model\Api\Data\ConfigFactory $configFactory,
-        \Gsoft\Webpos\Model\Api\Data\PaymentFactory $paymentFactory
-
+        \Gsoft\Webpos\Model\Api\Data\PaymentFactory $paymentFactory,
+        ?\Magento\Framework\Event\ManagerInterface $eventManager = null
     )
     {
         $this->storeManager = $storeManager;
@@ -33,6 +34,8 @@ class Config implements ConfigInterface
         $this->_paymentHelper = $paymentHelper;
         $this->configFactory=$configFactory;
         $this->paymentFactory=$paymentFactory;
+        $this->eventManager = $eventManager ?: \Magento\Framework\App\ObjectManager::getInstance()
+            ->get(\Magento\Framework\Event\ManagerInterface::class);
     }
 
 
@@ -51,6 +54,10 @@ class Config implements ConfigInterface
         $exit->setWebsites($this->getWebsites());
         $exit->setStores($this->getStores());
         $exit->setSourceStock($this->scopeConfig->getValue("webpos/general/source_stock", \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITE, $website_id));
+        $this->eventManager->dispatch('gsoft_webpos_before_return_config', [
+            'config' => $exit,
+            'website_id' => $website_id,
+        ]);
         return $exit;
     }
     function getPayments($website_id){

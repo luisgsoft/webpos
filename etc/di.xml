@@ -80,12 +80,12 @@
         <plugin name="quote_different_lines" type="Gsoft\Webpos\Plugin\Quote\Item"/>
     </type>
 
-    <type name="Gsoft\Webpos\Version\V3\Model\Api\Quote">
+    <type name="Gsoft\Webpos\Model\Api\Quote">
         <arguments>
             <argument name="logger" xsi:type="object">Gsoft\Webpos\Logger\Logger</argument>
         </arguments>
     </type>
-    <type name="Gsoft\Webpos\Version\V3\Model\Api\Catalog">
+    <type name="Gsoft\Webpos\Model\Api\Catalog">
         <arguments>
             <argument name="logger" xsi:type="object">Gsoft\Webpos\Logger\Logger</argument>
         </arguments>

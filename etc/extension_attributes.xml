@@ -6,6 +6,10 @@
         <attribute code="webpos_price" type="float" />
         <attribute code="webpos_stock" type="Gsoft\Webpos\Api\Data\StockInterface" />
         <attribute code="webpos_backorders" type="boolean" />
+        <attribute code="webpos_unit" type="string" />
+        <attribute code="webpos_min_qty" type="float" />
+        <attribute code="webpos_max_qty" type="float" />
+        <attribute code="webpos_qty_increments" type="float" />
     </extension_attributes>
     <extension_attributes for="Magento\Quote\Api\Data\CartInterface">
         <attribute code="webpos_terminal" type="string" />
