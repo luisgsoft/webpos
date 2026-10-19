@@ -609,12 +609,12 @@ class Quote implements QuoteInterface
             foreach ($data["payments"] as $orderpayment) {
                 $webpospayment = $this->orderPaymentFactory->create();
                 $webpospayment->setData($orderpayment);
-                $webpospayment->setData("terminal", $data["terminal"]);
-                $webpospayment->setData("user", $data["webpos_user"]);
+                $webpospayment->setData("terminal", $data["terminal"]??null);
+                $webpospayment->setData("user", $data["webpos_user"]??null);
                 $webpospayment->setData("order_id", $order->getId());
                 $webpospayment->setData("increment_id", $order->getIncrementId());
                 $webpospayment->setData("created_at", $order->getCreatedAt());
-                $webpospayment->setData("webpos_booking", $data['webpos_booking']);
+                $webpospayment->setData("webpos_booking", $data['webpos_booking']??null);
                 $webpospayment->save();
 
             }
