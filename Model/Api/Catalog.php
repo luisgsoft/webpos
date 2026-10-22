@@ -189,7 +189,7 @@ class Catalog implements CatalogInterface
         $attribute_configurable = [];
 
         foreach ($configurables as $id_at => $att) {
-            $attribute_configurable[] = ['id' => $id_at, 'label' => $att['label'], 'code' => $att['attribute_code'], 'options' => $att['options']];
+            $attribute_configurable[] = ['id' => $id_at, 'label' => $att['store_label'] ?: ($att['frontend_label'] ?: $att['label']), 'code' => $att['attribute_code'], 'options' => $att['options']];
         }
         $lowStock = $this->scopeConfig->getValue(self::XML_PATH_STOCK_THRESHOLD_QTY, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $childrenList = [];
