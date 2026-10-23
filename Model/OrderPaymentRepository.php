@@ -118,7 +118,7 @@ class OrderPaymentRepository implements OrderPaymentRepositoryInterface
 
         $items = [];
         foreach ($collection as $model) {
-            $model->setCreatedAt($this->timezone->date(new \DateTime($model->getCreatedAt()))->format('Y/m/d H:i:s'));
+            $model->setCreatedAt($this->timezone->date(new \DateTime((string)$model->getCreatedAt()))->format('Y/m/d H:i:s'));
             $items[] = $model;
         }
 

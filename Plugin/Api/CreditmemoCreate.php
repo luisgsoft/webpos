@@ -49,8 +49,8 @@ class CreditmemoCreate extends \Magento\Sales\Model\RefundOrder implements \Mage
                 $connection->query($sql);
                 /**@var /Magento\Sales\Model\CreditmemoRepository $creditmemos */
 
-                $payments = json_decode($payment, true);
-                foreach ($payments as $orderpayment) {
+                $payments = json_decode((string)$payment, true);
+                foreach ((array)$payments as $orderpayment) {
                     $webpospayment = $orderPaymentFactory->create();
                     $webpospayment->setData($orderpayment);
                     $webpospayment->setData("increment_id", $creditmemo->getIncrementId());

@@ -62,6 +62,21 @@ interface StocksourceInterface extends \Magento\Framework\Api\ExtensibleDataInte
      * @return $this
      */
     public function setSourceCode($source);
+
+    /**
+     * Returns the source name
+     *
+     * @return string $source_label
+     */
+    public function getSourceLabel();
+
+    /**
+     * Sets the source name.
+     *
+     * @param string $source_label
+     * @return $this
+     */
+    public function setSourceLabel($source_label);
     /**
      * Returns the source
      *

@@ -50,7 +50,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
         $TotalAmount_without_tax = $TotalAmountTaxed=0;
         $units = 0;
 
-        $max_discount = $total->getSubtotalInclTax() - abs($total->getDiscountAmount());
+        $max_discount = $total->getSubtotalInclTax() - abs((float)$total->getDiscountAmount());
 
         if($max_discount<=0){
             $quote->setWebposDiscountFixed(0);

@@ -14,7 +14,8 @@
             <column name="item_id"/>
         </index>
         <column name="sku" nullable="false" xsi:type="varchar" comment="sku" length="255"/>
-        <column name="qty" nullable="false" xsi:type="int" comment="qty" identity="false" padding="11"/>
+        <column name="qty" nullable="false" xsi:type="decimal" comment="qty" precision="12" scale="4" default="0"/>
+        <column name="unit" nullable="true" xsi:type="varchar" comment="Unidad de medida (vacío = unidades)" length="50"/>
         <column name="source" nullable="false" xsi:type="varchar" comment="source" length="255"/>
         <column name="created_at" nullable="false" xsi:type="datetime" comment="created_at"/>
         <column name="updated_at" nullable="false" xsi:type="datetime" comment="updated_at"/>

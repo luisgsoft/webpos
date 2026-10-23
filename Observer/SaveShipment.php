@@ -58,7 +58,7 @@ class SaveShipment implements ObserverInterface
 
                 if ($total >= $child->getQty()) {
                     //todas las unidades se han apartado
-                    $this->resource->getConnection()->query("Delete from webpos_stock_reservation where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " AND source=" . $this->resource->getConnection()->quote($source) . " AND accepted=1 limit " . $child->getQty());
+                    $this->resource->getConnection()->query("Delete from webpos_stock_reservation where order_id=" . $order->getId() . " AND item_id=" . $child->getOrderItemId() . " AND source=" . $this->resource->getConnection()->quote($source) . " AND accepted=1 limit " . max(1, (int)ceil((float)$child->getQty())));
                 } else {
 
                     //faltan unidades por apartar, hay que avisar a la tienda

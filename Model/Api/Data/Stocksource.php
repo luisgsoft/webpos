@@ -11,6 +11,7 @@ class Stocksource implements \Gsoft\Webpos\Api\Data\StocksourceInterface
     protected $qty;
     protected $status;
     protected $source_code;
+    protected $source_label;
     protected $source_id;
 
 
@@ -61,6 +62,22 @@ class Stocksource implements \Gsoft\Webpos\Api\Data\StocksourceInterface
     public function setSourceCode($source)
     {
         $this->source_code=$source;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSourceLabel()
+    {
+        return $this->source_label;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSourceLabel($source_label)
+    {
+        $this->source_label=$source_label;
     }
 
     /**

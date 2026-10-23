@@ -71,7 +71,7 @@ class Order implements OrderInterface
             $info = $order_payment->getAdditionalInformation();
             $payment_array = ['code' => $payment->getCode(), 'label' => $payment->getLabel(), 'delivered' => $payment->getDelivered(), 'reference' => $payment->getReference(), 'name' => $payment->getName(), 'amount' => $payment->getAmount()];
             $info['webpos'][] = $payment_array;
-            $info['instructions'] .= $payment->getName() . " x " . number_format($payment->getAmount(), 2) . " (" . $dateTime . ")" . "\n";
+            $info['instructions'] .= $payment->getName() . " x " . number_format((float)$payment->getAmount(), 2) . " (" . $dateTime . ")" . "\n";
             $order_payment->setAdditionalInformation($info);
             $order->setPayment($order_payment);
             $installments = doubleval($order->getData("webpos_installments"));

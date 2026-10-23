@@ -9,7 +9,8 @@ En los eventos con "transport" (DataObject), los datos que se devuelven son los 
       product, extension_attributes, stock (StockInterface: setQty/setStatus), search_criteria
       Datos de venta comunes (en extension_attributes; en getsimples, con las mismas claves en cada hijo):
       webpos_unit (unidad del precio y la cantidad, null = unidades), webpos_min_qty, webpos_max_qty,
-      webpos_qty_increments (null = sin incrementos) y el stock en webpos_stock. Un módulo que gestione el
+      webpos_qty_increments (null = sin incrementos), webpos_stock_editable (false = el TPV no puede cambiar
+      el stock) y el stock en webpos_stock. Un módulo que gestione el
       stock de otra forma (ej: Gsoft_AdvancedStock) los sobrescribe en este evento.
       Para añadir campos: declararlos como extension attributes de ProductInterface en el otro módulo
       (etc/extension_attributes.xml) y hacer $extensionAttributes->setData('codigo', valor).
@@ -23,4 +24,8 @@ En los eventos con "transport" (DataObject), los datos que se devuelven son los 
 - gsoft_webpos_before_return_payment        order/pay: transport, payment, order (null si falló al cargarlo)
 - gsoft_webpos_before_return_booking        order/book: transport, order_id, status
 - gsoft_webpos_before_return_config         config/list: config (objeto ConfigInterface), website_id
+- gsoft_webpos_before_stock_reservation_sources  al repartir cada línea de un pedido web entre almacenes:
+      transport (stocks: código => disponible; default_source: almacén del TPV), order_item, order
+- gsoft_webpos_before_save_stock_reservation  al guardar cada reserva de webpos_stock_reservation (pedido web):
+      reservation (modelo Stockreservation, sin guardar), order_item, order. Ej: setData('unit', 'm')
 - gsoft_webpos_before_returncustomer_name   quote/create (ya existía): customer_name (por referencia), quote, customer

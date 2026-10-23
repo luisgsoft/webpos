@@ -78,6 +78,13 @@ class Catalog implements CatalogInterface
     protected $eventManager;
     protected $stockRegistry;
 
+    /**
+     * Nombres de los almacenes por código (caché de la petición)
+     *
+     * @var array
+     */
+    private $sourceLabels = [];
+
     public function __construct(
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         \Magento\Catalog\Api\Data\ProductInterfaceFactory $productFactory,
@@ -138,6 +145,7 @@ class Catalog implements CatalogInterface
      * - webpos_unit: unidad de medida del precio y la cantidad (null = unidades normales).
      * - webpos_min_qty, webpos_max_qty, webpos_qty_increments (null si no hay incrementos): límites de cantidad en
      *   el carrito según la configuración de stock de Magento.
+     * - webpos_stock_editable: si el TPV puede cambiar el stock del producto (false si lo gestiona otro módulo).
      * El stock disponible va en webpos_stock (qty).
      *
      * @param int $productId
@@ -150,6 +158,7 @@ class Catalog implements CatalogInterface
             'webpos_min_qty' => 1.0,
             'webpos_max_qty' => null,
             'webpos_qty_increments' => null,
+            'webpos_stock_editable' => true,
         ];
         try {
             $stockItem = $this->stockRegistry->getStockItem((int)$productId);
@@ -210,7 +219,7 @@ class Catalog implements CatalogInterface
             $stock['sources'] = [];
             foreach ($sourceItemsBySku as $sourceItem) {
                 $quantity = $this->getQty($child->getSku(), $sourceItem, $lowStock);
-                $stock['sources'][] = ["qty" => $quantity, "status" => $this->getStatus($sourceItem), "source_code" => $sourceItem->getSourceCode(), "source_item_id" => $sourceItem->getSourceItemId()];
+                $stock['sources'][] = ["qty" => $quantity, "status" => $this->getStatus($sourceItem), "source_code" => $sourceItem->getSourceCode(), "source_label" => $this->getSourceLabel($sourceItem->getSourceCode()), "source_item_id" => $sourceItem->getSourceItemId()];
                 if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock")){
                     $stock['qty']=$quantity;
                     $stock['status']=$this->getStatus($sourceItem);
@@ -264,6 +273,25 @@ class Catalog implements CatalogInterface
         if($this->scopeConfig->getValue("cataloginventory/item_options/manage_stock")=="0") return 1;
         return $sourceItem->getStatus();
     }
+    /**
+     * Nombre del almacén (fuente de MSI); si no existe, el código
+     *
+     * @param string $sourceCode
+     * @return string
+     */
+    private function getSourceLabel($sourceCode)
+    {
+        $sourceCode = (string)$sourceCode;
+        if (!array_key_exists($sourceCode, $this->sourceLabels)) {
+            try {
+                $this->sourceLabels[$sourceCode] = (string)$this->sourceRepository->get($sourceCode)->getName() ?: $sourceCode;
+            } catch (\Exception $e) {
+                $this->sourceLabels[$sourceCode] = $sourceCode;
+            }
+        }
+        return $this->sourceLabels[$sourceCode];
+    }
+
     private function getReservedQty($sku, $source_code)
     {
         /**@var \Magento\Inventory\Model\Source $source*/
@@ -312,6 +340,7 @@ class Catalog implements CatalogInterface
                 $source->setQty($quantity);
                 $source->setStatus($this->getStatus($sourceItem));
                 $source->setSourceCode($sourceItem->getSourceCode());
+                $source->setSourceLabel($this->getSourceLabel($sourceItem->getSourceCode()));
                 $source->setSourceId($sourceItem->getSourceItemId());
                 $sources[]=$source;
                 if($sourceItem->getSourceCode() == $this->scopeConfig->getValue("webpos/general/source_stock")) {

@@ -20,6 +20,7 @@ class SaveOrder implements ObserverInterface
     protected $reservesFactory;
     protected $couponModel;
     protected $ruleRepository;
+    protected $eventManager;
 
 
     /**
@@ -33,7 +34,8 @@ class SaveOrder implements ObserverInterface
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Gsoft\Webpos\Model\StockreservationFactory $reservationF,
         \Magento\SalesRule\Model\Coupon                              $couponModel,
-        \Magento\SalesRule\Api\RuleRepositoryInterface               $ruleRepository
+        \Magento\SalesRule\Api\RuleRepositoryInterface               $ruleRepository,
+        ?\Magento\Framework\Event\ManagerInterface $eventManager = null
 
 
     ) {
@@ -45,6 +47,8 @@ class SaveOrder implements ObserverInterface
         $this->reservesFactory=$reservationF;
         $this->couponModel = $couponModel;
         $this->ruleRepository = $ruleRepository;
+        $this->eventManager = $eventManager ?: \Magento\Framework\App\ObjectManager::getInstance()
+            ->get(\Magento\Framework\Event\ManagerInterface::class);
 
 
     }
@@ -79,16 +83,36 @@ class SaveOrder implements ObserverInterface
 
 
             $stocks = $this->getQuantities($child->getSku());
-            $pending=$child->getQtyOrdered();
-            foreach($stocks as $code=>$wh){
-               if($wh >= $pending){
-                   $reservations[]=['item'=>$child, 'qty'=>$pending, 'source'=>$code];
-                   break;
-               }else{
-
-                   $reservations[]=['item'=>$child, 'qty'=>$wh, 'source'=>$code];
-                   $pending-=$wh;
-               }
+            // Otros módulos pueden cambiar el stock de cada almacén (código => disponible) con el que se reparte la
+            // reserva (ej: Gsoft_AdvancedStock, cuyo stock no va por almacén, lo reserva todo en default_source)
+            $transport = new \Magento\Framework\DataObject([
+                'stocks' => $stocks,
+                'default_source' => (string)$this->scopeConfig->getValue("webpos/general/source_stock"),
+            ]);
+            $this->eventManager->dispatch('gsoft_webpos_before_stock_reservation_sources', [
+                'transport' => $transport,
+                'order_item' => $child,
+                'order' => $order,
+            ]);
+            $stocks = is_array($transport->getData('stocks')) ? $transport->getData('stocks') : [];
+            if (empty($stocks)) continue;
+            $pending = (float)$child->getQtyOrdered();
+            $allocations = [];
+            foreach ($stocks as $code => $wh) {
+                if ($pending <= 0) break;
+                if ($wh <= 0) continue;
+                $qty = round(min((float)$wh, $pending), 4);
+                $allocations[$code] = $qty;
+                $pending = round($pending - $qty, 4);
+            }
+            // Si no hay stock suficiente en los almacenes (o Magento no gestiona el stock del producto, ej: los
+            // rollos de Gsoft_AdvancedStock), lo que falta se reserva en el almacén con más stock
+            if ($pending > 0) {
+                $code = array_key_first($stocks);
+                $allocations[$code] = round(($allocations[$code] ?? 0) + $pending, 4);
+            }
+            foreach ($allocations as $code => $qty) {
+                $reservations[] = ['item' => $child, 'qty' => $qty, 'source' => $code];
             }
         }
 
@@ -102,6 +126,12 @@ class SaveOrder implements ObserverInterface
                 $r->setData("source", $reserve['source']);
                 $r->setData("created_at", time());
                 $r->setData("updated_at", time());
+                // Otros módulos pueden completar la reserva (ej: unit, la unidad de medida; vacía = unidades)
+                $this->eventManager->dispatch('gsoft_webpos_before_save_stock_reservation', [
+                    'reservation' => $r,
+                    'order_item' => $reserve['item'],
+                    'order' => $order,
+                ]);
                 $r->save();
            // }
         }

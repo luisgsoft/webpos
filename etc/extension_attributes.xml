@@ -10,6 +10,7 @@
         <attribute code="webpos_min_qty" type="float" />
         <attribute code="webpos_max_qty" type="float" />
         <attribute code="webpos_qty_increments" type="float" />
+        <attribute code="webpos_stock_editable" type="boolean" />
     </extension_attributes>
     <extension_attributes for="Magento\Quote\Api\Data\CartInterface">
         <attribute code="webpos_terminal" type="string" />

@@ -215,7 +215,7 @@ class Quote implements QuoteInterface
             if (!empty($item['gift'])) continue;
             try {
 
-                if (!empty($item['customized']) && $item['custom_price'] == 0) $item['custom_price'] = 0.0001;
+                if (!empty($item['customized']) && (float)$item['custom_price'] == 0) $item['custom_price'] = 0.0001;
                 $_product = $this->productRepository->getById($item['id']);
                 /**@var \Magento\Catalog\Pricing\Price\FinalPrice $price */
 
@@ -239,7 +239,7 @@ class Quote implements QuoteInterface
                 if (!empty($item['customized'])) {
                     if (!$this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
                         if ($rate > 0) {
-                            $params['custom_price'] = $item['custom_price'] / (1 + $rate * 0.01);
+                            $params['custom_price'] = (float)$item['custom_price'] / (1 + $rate * 0.01);
                         } else $params['custom_price'] = $item['custom_price'];
                     } else $params['custom_price'] = $item['custom_price'];
                 }
@@ -365,7 +365,7 @@ class Quote implements QuoteInterface
             }
         }
         $data['id'] = $quote->getId();
-        $data['discount_amount'] = abs($quote->getShippingAddress()->getDiscountAmount());
+        $data['discount_amount'] = abs((float)$quote->getShippingAddress()->getDiscountAmount());
         $data['discount_cart'] = $quote->getShippingAddress()->getDiscountDescription();
         $data['coupon_code'] = $quote->getCouponCode();
         $data['subtotal_with_discount'] = max(0, $quote->getSubtotalWithDiscount());
@@ -490,7 +490,7 @@ class Quote implements QuoteInterface
 
         if(!empty($data['webpos_booking'])){
 
-            $quote->setReservedOrderId($prefix_booking.$this->getNextBookingId())->save();
+            $quote->setReservedOrderId($prefix_booking.$this->getNextBookingId($prefix_booking))->save();
 
         }else{
             $quote->setReservedOrderId(null);
@@ -541,7 +541,7 @@ class Quote implements QuoteInterface
                 foreach ($data['payments'] as $payment_item) {
                     if(empty($payment_code)) $payment_code = $payment_item['code'];
                     $amount=$payment_item['amount']??$payment_item['delivered'];
-                    $payment_description.=$payment_item['name']." x ".number_format($amount, 2)."\n";
+                    $payment_description.=$payment_item['name']." x ".number_format((float)$amount, 2)."\n";
                     if($payment_item['code']!="webpos_installment") $payed_installment+=$amount;
                     else $has_installments=true;
                 }
@@ -805,8 +805,8 @@ class Quote implements QuoteInterface
     {
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
     }
-    private function getNextBookingId(){
-        $prefix=$this->scopeConfig->getValue('webpos/general/prefix_booking');
+    private function getNextBookingId($prefix){
+        $prefix = (string)$prefix;
 
         $sql="select increment_id from sales_order where increment_id like ".$this->db->quote($prefix."%")." order by entity_id desc limit 1";
         $increment_id = $this->db->fetchOne($sql);
