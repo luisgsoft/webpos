@@ -640,7 +640,8 @@ class Quote implements QuoteInterface
                     // create the shipment
                     $shipment = $this->shipmentFactory->create($order, $items);
                     $shipment->getExtensionAttributes()->setSourceCode($this->scopeConfig->getValue("webpos/general/source_stock"));
-                    $shipment->setData("webpos_booking", $data["webpos_booking"]);
+                    // ?? null: el pedido de un cambio (Yii PutRefund) puede no traerlo y el aviso cortaba envío y factura
+                    $shipment->setData("webpos_booking", $data["webpos_booking"] ?? null);
                     $shipment->register();
                     // save the newly created shipment
                     $transactionSave = $this->transactionFactory->create()->addObject($shipment);
@@ -664,7 +665,7 @@ class Quote implements QuoteInterface
                 //generate invoice
                 $invoice = $this->invoiceService->prepareInvoice($order);
                 $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_OFFLINE);
-                $invoice->setData("webpos_booking", $data["webpos_booking"]);
+                $invoice->setData("webpos_booking", $data["webpos_booking"] ?? null);
                 $invoice->register();
                 $invoice->getOrder()->setCustomerNoteNotify(false);
                 $invoice->getOrder()->setIsInProcess(true);
