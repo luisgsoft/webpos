@@ -38,6 +38,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
 
         parent::collect($quote, $shippingAssignment, $total);
         if (!$quote->getData("items_qty") > 0 || !$total->getData("subtotal") > 0) return;
+        $discountTax = $this->discountTax($quote);
 
         $address = $shippingAssignment->getShipping()->getAddress();
 
@@ -62,20 +63,21 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
 
             if($quote->getWebposDiscountPercent()>100) $quote->setWebposDiscountPercent(100);
 
+            $pct = $quote->getWebposDiscountPercent();
             foreach ($quote->getAllVisibleItems() as $item) {
-
-                $discount = $item->getRowTotal() * $quote->getWebposDiscountPercent() * 0.01;
-                $TotalAmount_without_tax+=$discount;
-                $discounttax=$item->getRowTotalInclTax() * $quote->getWebposDiscountPercent() * 0.01;
-                $TotalAmountTaxed +=$discounttax;
-
-                $item->setDiscountAmount($item->getDiscountAmount()+$discounttax);
-                $item->setBaseDiscountAmount($item->getBaseDiscountAmount()+$discounttax);
-                $item->setDiscountPercent($quote->getWebposDiscountPercent());
-
-
+                $discount = $this->priceCurrency->round($item->getRowTotal() * $pct * 0.01);
+                $discounttax = $this->priceCurrency->round($item->getRowTotalInclTax() * $pct * 0.01);
+                $TotalAmount_without_tax += $discount;
+                $TotalAmountTaxed += $discounttax;
+                // misma base que Magento: con IVA solo si "Apply Discount On Prices" = incluyendo impuestos
+                $line = $discountTax ? $discounttax : $discount;
+                $item->setDiscountAmount($item->getDiscountAmount() + $line);
+                $item->setBaseDiscountAmount($item->getBaseDiscountAmount() + $line);
+                $item->setDiscountPercent($pct);
             }
-            $TotalAmount=$TotalAmountTaxed;
+            // igual que la rama de importe fijo: sin IVA, lo que se resta del total es la base sin IVA
+            if (!$discountTax) $TotalAmountTaxed = $TotalAmount_without_tax;
+            $TotalAmount = $TotalAmountTaxed;
 
         } else {
             if(abs($quote->getWebposDiscountFixed()) > $max_discount){
@@ -98,7 +100,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             $tax_percent = $tax_percent / $units;
             if ($tax_percent > 0) {
 
-                if(!$this->scopeConfig->getValue("tax/calculation/discount_tax")){
+                if(!$discountTax){
                     $TotalAmount_without_tax = $TotalAmountTaxed= $TotalAmount;
                     //$TotalAmountTaxed = $TotalAmount*(1+$tax_percent*0.01);
 
@@ -110,7 +112,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
             }
             $remain=0;
             //vamos a obtener en porcentaje cuanto descuento se aplica
-            if($this->scopeConfig->getValue("tax/calculation/discount_tax")) {
+            if($discountTax) {
                 $remain = $TotalAmountTaxed;
             }else{
                 $remain = $TotalAmount_without_tax;
@@ -152,7 +154,7 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
         $total->setDiscountAmount($discountAmount);
         $total->setBaseDiscountAmount($discountAmount);
 
-        if (!$this->scopeConfig->getValue("tax/calculation/discount_tax")) {
+        if (!$discountTax) {
             // Descuento antes del IVA => el subtotal con descuento debe recalcularse sobre la base imponible
             $total->setSubtotalWithDiscount($total->getSubtotal() - abs($TotalAmount_without_tax));
             $total->setBaseSubtotalWithDiscount($total->getBaseSubtotal() - abs($TotalAmount_without_tax));
@@ -181,6 +183,11 @@ class Discount extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
 
         return $this;
 
+    }
+
+    private function discountTax(\Magento\Quote\Model\Quote $quote)
+    {
+        return (bool)$this->scopeConfig->getValue('tax/calculation/discount_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $quote->getStoreId());
     }
 
     public

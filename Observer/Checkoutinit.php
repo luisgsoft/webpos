@@ -27,7 +27,7 @@ class Checkoutinit implements \Magento\Framework\Event\ObserverInterface
             $quote->setData("webpos_installments", null);
             $quote->setData("webpos_discount_percent", null);
             $quote->setData("webpos_discount_label", null);
-            $quote->setData("webpos_fixed", null);
+            $quote->setData("webpos_discount_fixed", null);
             $quote->save();
         }catch(\Exception $e){
             $this->logger->info("Error al quitar campos del webpos en el checkout");
