@@ -4,24 +4,15 @@
     "license": "proprietary",
     "authors": [
         {
-            "name": "Gsoft",
-            "email": "luis@gsoft.es"
-        }
-    ],
-	"version": "1.0.54",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "license": [
-        "MIT"
-    ],
-	"authors": [
-        {
             "name": "Gsoft team",
             "email": "luis@gsoft.es",
             "homepage": "https://www.gsoft.es",
             "role": "Leader"
         }
     ],
+    "version": "1.0.55",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {},
     "autoload": {
         "files": [
